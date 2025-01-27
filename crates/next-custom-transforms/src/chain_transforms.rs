@@ -117,6 +117,9 @@ pub struct TransformOptions {
 
     #[serde(default)]
     pub lint_codemod_comments: bool,
+
+    #[serde(default)]
+    pub track_dynamic_imports: bool,
 }
 
 pub fn custom_before_pass<'a, C>(
@@ -326,17 +329,11 @@ where
                 None => Either::Right(noop_pass()),
             },
             // TODO: probably should use serparate options, but this works for now
-            match &opts.server_actions {
-                Some(config) => {
-                    if config.is_react_server_layer && config.dynamic_io_enabled {
-                        Either::Left(
-                            crate::transforms::track_dynamic_imports::track_dynamic_imports(),
-                        )
-                    } else {
-                        Either::Right(noop_pass())
-                    }
+            match &opts.track_dynamic_imports {
+                true => {
+                    Either::Left(crate::transforms::track_dynamic_imports::track_dynamic_imports())
                 }
-                None => Either::Right(noop_pass()),
+                false => Either::Right(noop_pass()),
             },
             match &opts.cjs_require_optimizer {
                 Some(config) => Either::Left(visit_mut_pass(
