@@ -331,7 +331,12 @@ where
             // TODO: probably should use serparate options, but this works for now
             match &opts.track_dynamic_imports {
                 true => {
-                    Either::Left(crate::transforms::track_dynamic_imports::track_dynamic_imports())
+                    let unresolved_ctxt = SyntaxContext::empty().apply_mark(unresolved_mark);
+                    Either::Left(
+                        crate::transforms::track_dynamic_imports::track_dynamic_imports(
+                            unresolved_ctxt,
+                        ),
+                    )
                 }
                 false => Either::Right(noop_pass()),
             },
