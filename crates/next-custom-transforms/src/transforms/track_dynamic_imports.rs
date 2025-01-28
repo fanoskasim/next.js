@@ -103,11 +103,9 @@ where
             stmts.insert(
                 0,
                 quote!(
-                    "{\n
-                        if (typeof $name === 'function') {\n
-                            $name = $replacement_expr\n
-                        }\n
-                    }\n" as ModuleItem,
+                    "if (typeof $name === 'function') {\
+                        $name = $replacement_expr;\
+                    }" as ModuleItem,
                     name = name_ident.clone(),
                     replacement_expr: Expr = replacement_expr,
                 ),
