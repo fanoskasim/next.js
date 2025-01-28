@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use serde::Deserialize;
 use swc_core::{
     atoms::Atom,
-    common::{comments::Comments, util::take::Take, Span, SyntaxContext},
+    common::{comments::Comments, util::take::Take, Mark, Span, SyntaxContext},
     ecma::{
         ast::*,
         utils::{private_ident, quote_ident, quote_str},
@@ -17,10 +17,10 @@ use swc_core::{
 pub struct Config {}
 
 pub fn track_dynamic_imports<C: Comments>(
-    unresolved_ctxt: SyntaxContext,
+    unresolved_mark: Mark,
     comments: C,
 ) -> impl VisitMut + Pass {
-    visit_mut_pass(ImportReplacer::new(unresolved_ctxt, comments))
+    visit_mut_pass(ImportReplacer::new(unresolved_mark, comments))
 }
 
 struct ImportReplacer<C> {
@@ -36,9 +36,9 @@ impl<C> ImportReplacer<C>
 where
     C: Comments,
 {
-    pub fn new(unresolved_ctxt: SyntaxContext, comments: C) -> Self {
+    pub fn new(unresolved_mark: Mark, comments: C) -> Self {
         ImportReplacer {
-            unresolved_ctxt,
+            unresolved_ctxt: SyntaxContext::empty().apply_mark(unresolved_mark),
             comments,
             track_dynamic_import_local_ident: private_ident!("$$trackDynamicImport__"),
             track_async_function_local_ident: private_ident!("$$trackAsyncFunction__"),

@@ -912,10 +912,9 @@ fn track_dynamic_imports_fixture(input: PathBuf) {
         &|_tr| {
             let unresolved_mark = Mark::new();
             let top_level_mark = Mark::new();
-            let unresolved_ctxt = SyntaxContext::empty().apply_mark(unresolved_mark);
             (
                 resolver(unresolved_mark, top_level_mark, false),
-                track_dynamic_imports(unresolved_ctxt, _tr.comments.as_ref().clone()),
+                track_dynamic_imports(unresolved_mark, _tr.comments.as_ref().clone()),
             )
         },
         &input,
