@@ -26,8 +26,14 @@ struct ImportReplacer<C> {
     track_dynamic_import_local_ident: Ident,
     track_async_function_local_ident: Ident,
     has_dynamic_import: bool,
-    has_webpack_load: bool,
-    has_turbopack_load: bool,
+    has_global: TrackedGlobals,
+}
+
+struct TrackedGlobals {
+    webpack_load: bool,
+    webpack_require: bool,
+    turbopack_load: bool,
+    turbopack_require: bool,
 }
 
 impl<C> ImportReplacer<C>
@@ -41,8 +47,12 @@ where
             track_dynamic_import_local_ident: private_ident!("$$trackDynamicImport__"),
             track_async_function_local_ident: private_ident!("$$trackAsyncFunction__"),
             has_dynamic_import: false,
-            has_webpack_load: false,
-            has_turbopack_load: false,
+            has_global: TrackedGlobals {
+                webpack_load: false,
+                webpack_require: false,
+                turbopack_load: false,
+                turbopack_require: false,
+            },
         }
     }
 }
@@ -72,23 +82,7 @@ where
 
         // bundler globals
 
-        let mut did_insert_import_for_track_async_function = false;
-        let mut maybe_insert_import_for_track_async_function = |stmts: &mut Vec<ModuleItem>| {
-            if did_insert_import_for_track_async_function {
-                return;
-            }
-            stmts.insert(
-                0,
-                quote!(
-                    "import { trackAsyncFunction as $wrapper_fn } from \
-                     'private-next-rsc-track-dynamic-import'" as ModuleItem,
-                    wrapper_fn = self.track_async_function_local_ident.clone()
-                ),
-            );
-            did_insert_import_for_track_async_function = true;
-        };
-
-        let add_load_wrapper = |stmts: &mut Vec<ModuleItem>, name: &str| {
+        let insert_global_fn_wrapper = |stmts: &mut Vec<ModuleItem>, name: &str| {
             let name_ident: Ident = quote_ident!(self.unresolved_ctxt, name).into();
 
             let replacement_expr = {
@@ -120,14 +114,35 @@ where
             );
         };
 
-        if self.has_turbopack_load {
-            add_load_wrapper(stmts, "__turbopack_load__");
-            maybe_insert_import_for_track_async_function(stmts);
+        let mut needs_track_async_function = false;
+        if self.has_global.webpack_load {
+            insert_global_fn_wrapper(stmts, "__webpack_load__");
+            needs_track_async_function = true;
         }
 
-        if self.has_webpack_load {
-            add_load_wrapper(stmts, "__webpack_load__");
-            maybe_insert_import_for_track_async_function(stmts);
+        if self.has_global.webpack_require {
+            insert_global_fn_wrapper(stmts, "__webpack_require__");
+            needs_track_async_function = true;
+        }
+
+        if self.has_global.turbopack_load {
+            insert_global_fn_wrapper(stmts, "__turbopack_load__");
+            needs_track_async_function = true;
+        }
+        if self.has_global.turbopack_require {
+            insert_global_fn_wrapper(stmts, "__turbopack_require__");
+            needs_track_async_function = true;
+        }
+
+        if needs_track_async_function {
+            stmts.insert(
+                0,
+                quote!(
+                    "import { trackAsyncFunction as $wrapper_fn } from \
+                     'private-next-rsc-track-dynamic-import'" as ModuleItem,
+                    wrapper_fn = self.track_async_function_local_ident.clone()
+                ),
+            );
         }
     }
 
@@ -159,9 +174,13 @@ where
         // if it's not unresolved, then there's a local redefinition which we don't want to touch
         if ident.ctxt == self.unresolved_ctxt {
             if ident.sym == "__webpack_load__" {
-                self.has_webpack_load = true;
+                self.has_global.webpack_load = true;
+            } else if ident.sym == "__webpack_require__" {
+                self.has_global.webpack_require = true;
             } else if ident.sym == "__turbopack_load__" {
-                self.has_turbopack_load = true;
+                self.has_global.turbopack_load = true;
+            } else if ident.sym == "__turbopack_require__" {
+                self.has_global.turbopack_require = true;
             }
         }
     }
