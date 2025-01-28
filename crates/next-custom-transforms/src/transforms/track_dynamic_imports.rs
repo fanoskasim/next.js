@@ -74,6 +74,9 @@ where
 
         let mut did_insert_import_for_track_async_function = false;
         let mut maybe_insert_import_for_track_async_function = |stmts: &mut Vec<ModuleItem>| {
+            if did_insert_import_for_track_async_function {
+                return;
+            }
             stmts.insert(
                 0,
                 quote!(
