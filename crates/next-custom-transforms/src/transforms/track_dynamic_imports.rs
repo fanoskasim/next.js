@@ -3,7 +3,7 @@ use swc_core::{
     common::{util::take::Take, SyntaxContext},
     ecma::{
         ast::*,
-        utils::{private_ident, quote_ident},
+        utils::{private_ident, quote_ident, quote_str},
         visit::{noop_visit_mut_type, visit_mut_pass, VisitMut, VisitMutWith},
     },
     quote,
@@ -19,7 +19,8 @@ pub fn track_dynamic_imports(unresolved_ctxt: SyntaxContext) -> impl VisitMut + 
 
 struct ImportReplacer {
     unresolved_ctxt: SyntaxContext,
-    wrapper_function_local_ident: Ident,
+    track_dynamic_import_local_ident: Ident,
+    track_async_function_local_ident: Ident,
     has_dynamic_import: bool,
     has_webpack_load: bool,
     has_turbopack_load: bool,
@@ -29,7 +30,8 @@ impl ImportReplacer {
     pub fn new(unresolved_ctxt: SyntaxContext) -> Self {
         ImportReplacer {
             unresolved_ctxt,
-            wrapper_function_local_ident: private_ident!("$$trackDynamicImport__"),
+            track_dynamic_import_local_ident: private_ident!("$$trackDynamicImport__"),
+            track_async_function_local_ident: private_ident!("$$trackAsyncFunction__"),
             has_dynamic_import: false,
             has_webpack_load: false,
             has_turbopack_load: false,
@@ -43,23 +45,34 @@ impl VisitMut for ImportReplacer {
     fn visit_mut_module_items(&mut self, stmts: &mut Vec<ModuleItem>) {
         stmts.visit_mut_children_with(self);
 
-        let mut did_insert_import = false;
-        let mut maybe_insert_import = |stmts: &mut Vec<ModuleItem>| {
+        // import()
+
+        if self.has_dynamic_import {
+            // if we found an import() while visiting children, we need to import the helper
             stmts.insert(
                 0,
                 quote!(
                     "import { trackDynamicImport as $wrapper_fn } from \
                      'private-next-rsc-track-dynamic-import'" as ModuleItem,
-                    wrapper_fn = self.wrapper_function_local_ident.clone()
+                    wrapper_fn = self.track_dynamic_import_local_ident.clone()
                 ),
             );
-            did_insert_import = true;
-        };
-
-        if self.has_dynamic_import {
-            // if we found an import() while visiting children, we need to import the helper
-            maybe_insert_import(stmts);
         }
+
+        // bundler globals
+
+        let mut did_insert_import_for_track_async_function = false;
+        let mut maybe_insert_import_for_track_async_function = |stmts: &mut Vec<ModuleItem>| {
+            stmts.insert(
+                0,
+                quote!(
+                    "import { trackAsyncFunction as $wrapper_fn } from \
+                     'private-next-rsc-track-dynamic-import'" as ModuleItem,
+                    wrapper_fn = self.track_async_function_local_ident.clone()
+                ),
+            );
+            did_insert_import_for_track_async_function = true;
+        };
 
         let add_load_wrapper = |stmts: &mut Vec<ModuleItem>, name: &str| {
             stmts.insert(
@@ -67,26 +80,24 @@ impl VisitMut for ImportReplacer {
                 quote!(
                     "{\n
                         if (typeof $name === 'function') {\n
-                            const orig = $name;\n
-                            $name = function $name(...args) {\n
-                                return $wrapper_fn(orig(...args));\n
-                            };\n
+                            $name = $wrapper_fn($name_string, $name)\n
                         }\n
                     }\n" as ModuleItem,
                     name = quote_ident!(self.unresolved_ctxt, name).into(),
-                    wrapper_fn = self.wrapper_function_local_ident.clone()
+                    name_string: Expr = quote_str!(name).into(),
+                    wrapper_fn = self.track_async_function_local_ident.clone()
                 ),
             );
         };
 
         if self.has_turbopack_load {
-            maybe_insert_import(stmts);
-            add_load_wrapper(stmts, "__turbopack_load__")
+            add_load_wrapper(stmts, "__turbopack_load__");
+            maybe_insert_import_for_track_async_function(stmts);
         }
 
         if self.has_webpack_load {
-            maybe_insert_import(stmts);
-            add_load_wrapper(stmts, "__webpack_load__")
+            add_load_wrapper(stmts, "__webpack_load__");
+            maybe_insert_import_for_track_async_function(stmts);
         }
     }
 
@@ -104,7 +115,7 @@ impl VisitMut for ImportReplacer {
             self.has_dynamic_import = true;
             *expr = quote!(
                 "$wrapper_fn($expr)" as Expr,
-                wrapper_fn = self.wrapper_function_local_ident.clone(),
+                wrapper_fn = self.track_dynamic_import_local_ident.clone(),
                 expr: Expr = expr.take()
             )
         }
