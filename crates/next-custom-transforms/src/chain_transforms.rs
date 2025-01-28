@@ -335,6 +335,7 @@ where
                     Either::Left(
                         crate::transforms::track_dynamic_imports::track_dynamic_imports(
                             unresolved_ctxt,
+                            comments.clone(),
                         ),
                     )
                 }

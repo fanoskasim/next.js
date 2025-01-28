@@ -19,7 +19,7 @@ impl CustomTransformer for NextTrackDynamicImports {
     #[tracing::instrument(level = tracing::Level::TRACE, name = "next_track_dynamic_imports", skip_all)]
     async fn transform(&self, program: &mut Program, ctx: &TransformContext<'_>) -> Result<()> {
         let unresolved_ctxt = SyntaxContext::empty().apply_mark(ctx.unresolved_mark);
-        program.mutate(track_dynamic_imports(unresolved_ctxt));
+        program.mutate(track_dynamic_imports(unresolved_ctxt, ctx.comments));
         Ok(())
     }
 }

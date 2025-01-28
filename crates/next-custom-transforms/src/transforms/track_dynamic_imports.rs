@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use swc_core::{
-    common::{util::take::Take, SyntaxContext},
+    common::{comments::Comments, util::take::Take, Span, SyntaxContext},
     ecma::{
         ast::*,
         utils::{private_ident, quote_ident, quote_str},
@@ -13,12 +13,16 @@ use swc_core::{
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 pub struct Config {}
 
-pub fn track_dynamic_imports(unresolved_ctxt: SyntaxContext) -> impl VisitMut + Pass {
-    visit_mut_pass(ImportReplacer::new(unresolved_ctxt))
+pub fn track_dynamic_imports<C: Comments>(
+    unresolved_ctxt: SyntaxContext,
+    comments: C,
+) -> impl VisitMut + Pass {
+    visit_mut_pass(ImportReplacer::new(unresolved_ctxt, comments))
 }
 
-struct ImportReplacer {
+struct ImportReplacer<C> {
     unresolved_ctxt: SyntaxContext,
+    comments: C,
     track_dynamic_import_local_ident: Ident,
     track_async_function_local_ident: Ident,
     has_dynamic_import: bool,
@@ -26,10 +30,14 @@ struct ImportReplacer {
     has_turbopack_load: bool,
 }
 
-impl ImportReplacer {
-    pub fn new(unresolved_ctxt: SyntaxContext) -> Self {
+impl<C> ImportReplacer<C>
+where
+    C: Comments,
+{
+    pub fn new(unresolved_ctxt: SyntaxContext, comments: C) -> Self {
         ImportReplacer {
             unresolved_ctxt,
+            comments,
             track_dynamic_import_local_ident: private_ident!("$$trackDynamicImport__"),
             track_async_function_local_ident: private_ident!("$$trackAsyncFunction__"),
             has_dynamic_import: false,
@@ -39,7 +47,10 @@ impl ImportReplacer {
     }
 }
 
-impl VisitMut for ImportReplacer {
+impl<C> VisitMut for ImportReplacer<C>
+where
+    C: Comments,
+{
     noop_visit_mut_type!(); // TODO: what does this do?
 
     fn visit_mut_module_items(&mut self, stmts: &mut Vec<ModuleItem>) {
@@ -75,17 +86,33 @@ impl VisitMut for ImportReplacer {
         };
 
         let add_load_wrapper = |stmts: &mut Vec<ModuleItem>, name: &str| {
+            let name_ident: Ident = quote_ident!(self.unresolved_ctxt, name).into();
+
+            let replacement_expr = {
+                let expr_span = Span::dummy_with_cmt();
+                let mut expr: Expr = quote!(
+                    "$wrapper_fn($name_string, $name)" as Expr,
+                    wrapper_fn = self.track_async_function_local_ident.clone(),
+                    name_string: Expr = quote_str!(name).into(),
+                    name = name_ident.clone(),
+                );
+
+                // this call doesn't have any side effects, so add `/*#__PURE__*/`
+                expr.set_span(expr_span);
+                self.comments.add_pure_comment(expr_span.lo);
+                expr
+            };
+
             stmts.insert(
                 0,
                 quote!(
                     "{\n
                         if (typeof $name === 'function') {\n
-                            $name = $wrapper_fn($name_string, $name)\n
+                            $name = $replacement_expr\n
                         }\n
                     }\n" as ModuleItem,
-                    name = quote_ident!(self.unresolved_ctxt, name).into(),
-                    name_string: Expr = quote_str!(name).into(),
-                    wrapper_fn = self.track_async_function_local_ident.clone()
+                    name = name_ident.clone(),
+                    replacement_expr: Expr = replacement_expr,
                 ),
             );
         };

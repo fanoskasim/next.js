@@ -915,7 +915,7 @@ fn track_dynamic_imports_fixture(input: PathBuf) {
             let unresolved_ctxt = SyntaxContext::empty().apply_mark(unresolved_mark);
             (
                 resolver(unresolved_mark, top_level_mark, false),
-                track_dynamic_imports(unresolved_ctxt),
+                track_dynamic_imports(unresolved_ctxt, _tr.comments.as_ref().clone()),
             )
         },
         &input,
