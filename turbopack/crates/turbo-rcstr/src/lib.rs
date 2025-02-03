@@ -305,7 +305,7 @@ pub type Cached = Lazy<RcStr>;
 /// calls will never allocate.
 #[macro_export]
 macro_rules! rcstr {
-    ($s:literal) => {{
+    ($s:expr) => {{
         static STR: $crate::Cached = $crate::Cached::new(|| $crate::RcStr::from($s));
 
         (*STR).clone()
