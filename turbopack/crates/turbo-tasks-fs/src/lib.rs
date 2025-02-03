@@ -58,7 +58,7 @@ use tokio::{
     sync::{RwLock, RwLockReadGuard},
 };
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     debug::ValueDebugFormat, effect, mark_session_dependent, mark_stateful, trace::TraceRawVcs,
     Completion, Invalidator, NonLocalValue, ReadRef, ResolvedVc, ValueToString, Vc,
@@ -1496,10 +1496,10 @@ impl FileSystemPath {
             return Ok(self);
         }
         let p = match str::rfind(path, '/') {
-            Some(index) => path[..index].to_string(),
-            None => "".to_string(),
+            Some(index) => path[..index].into(),
+            None => rcstr!(""),
         };
-        Ok(FileSystemPath::new_normalized(*this.fs, p.into()))
+        Ok(FileSystemPath::new_normalized(*this.fs, p))
     }
 
     #[turbo_tasks::function]
