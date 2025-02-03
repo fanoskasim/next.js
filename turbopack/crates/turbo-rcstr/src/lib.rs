@@ -10,6 +10,7 @@ use std::{
 };
 
 use debug_unreachable::debug_unreachable;
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use triomphe::Arc;
 use turbo_tasks_hash::{DeterministicHash, DeterministicHasher};
@@ -246,7 +247,7 @@ impl Clone for RcStr {
 
 impl Default for RcStr {
     fn default() -> Self {
-        RcStr::from("")
+        rcstr!("")
     }
 }
 
@@ -295,6 +296,20 @@ impl Drop for RcStr {
             unsafe { drop(dynamic::restore_arc(self.unsafe_data)) }
         }
     }
+}
+
+#[doc(hidden)]
+pub type Cached = Lazy<RcStr>;
+
+/// Creates an instance of [`RcStr`] from a string literal. This `RcStr` is never deallocated, and
+/// repeated calls will never allocate.
+#[macro_export]
+macro_rules! rcstr {
+    ($s:literal) => {{
+        static STR: $crate::Cached = $crate::Cached::new(|| $crate::RcStr::from($s));
+
+        (*STR).clone()
+    }};
 }
 
 #[cfg(test)]
