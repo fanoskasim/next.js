@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::FileContent;
 use turbopack_core::{
@@ -12,7 +12,7 @@ use crate::utils::StringifyJs;
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("text content".into())
+    Vc::cell(rcstr!("text content"))
 }
 
 /// A source asset that exports the string content of an asset as the default
@@ -37,7 +37,7 @@ impl Source for TextContentFileSource {
         self.source
             .ident()
             .with_modifier(modifier())
-            .rename_as("*.mjs".into())
+            .rename_as(rcstr!("*.mjs"))
     }
 }
 

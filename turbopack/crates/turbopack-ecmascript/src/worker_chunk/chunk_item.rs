@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
 use indoc::formatdoc;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbopack_core::{
     chunk::{
@@ -31,7 +31,7 @@ pub struct WorkerLoaderChunkItem {
 
 #[turbo_tasks::function]
 pub fn worker_modifier() -> Vc<RcStr> {
-    Vc::cell("worker".into())
+    Vc::cell(rcstr!("worker"))
 }
 
 #[turbo_tasks::value_impl]
@@ -51,7 +51,7 @@ impl WorkerLoaderChunkItem {
         Ok(self.chunking_context.evaluated_chunk_group_assets(
             AssetIdent::from_path(
                 self.chunking_context
-                    .chunk_path(module.inner.ident(), ".js".into()),
+                    .chunk_path(module.inner.ident(), rcstr!(".js")),
             )
             .with_modifier(worker_modifier()),
             EvaluatableAssets::empty().with_entry(*evaluatable),
@@ -103,7 +103,7 @@ impl EcmascriptChunkItem for WorkerLoaderChunkItem {
 
 #[turbo_tasks::function]
 fn chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("worker chunk".into())
+    Vc::cell(rcstr!("worker chunk"))
 }
 
 #[turbo_tasks::value_impl]

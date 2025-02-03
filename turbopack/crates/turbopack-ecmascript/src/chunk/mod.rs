@@ -7,7 +7,7 @@ pub(crate) mod placeable;
 use std::fmt::Write;
 
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystem;
 use turbopack_core::{
@@ -63,12 +63,12 @@ impl EcmascriptChunk {
 
 #[turbo_tasks::function]
 fn chunk_item_key() -> Vc<RcStr> {
-    Vc::cell("chunk item".into())
+    Vc::cell(rcstr!("chunk item"))
 }
 
 #[turbo_tasks::function]
 fn availability_root_key() -> Vc<RcStr> {
-    Vc::cell("current_availability_root".into())
+    Vc::cell(rcstr!("current_availability_root"))
 }
 
 #[turbo_tasks::value_impl]
@@ -192,12 +192,12 @@ impl Asset for EcmascriptChunk {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("ecmascript chunk".into())
+    Vc::cell(rcstr!("ecmascript chunk"))
 }
 
 #[turbo_tasks::function]
 fn chunk_item_module_key() -> Vc<RcStr> {
-    Vc::cell("module".into())
+    Vc::cell(rcstr!("module"))
 }
 
 #[turbo_tasks::value_impl]

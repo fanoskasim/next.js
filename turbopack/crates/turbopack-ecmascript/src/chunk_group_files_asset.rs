@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::{File, FileSystemPath};
 use turbopack_core::{
@@ -29,7 +29,7 @@ use crate::{
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("chunk group files".into())
+    Vc::cell(rcstr!("chunk group files"))
 }
 
 /// An asset that exports a list of chunk URLs by putting the [asset] into a
@@ -44,12 +44,12 @@ pub struct ChunkGroupFilesAsset {
 
 #[turbo_tasks::function]
 fn module_description() -> Vc<RcStr> {
-    Vc::cell("module".into())
+    Vc::cell(rcstr!("module"))
 }
 
 #[turbo_tasks::function]
 fn runtime_entry_description() -> Vc<RcStr> {
-    Vc::cell("runtime entry".into())
+    Vc::cell(rcstr!("runtime entry"))
 }
 
 #[turbo_tasks::value_impl]
@@ -201,7 +201,7 @@ impl EcmascriptChunkItem for ChunkGroupFilesChunkItem {
 
 #[turbo_tasks::function]
 fn chunk_group_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("chunk group chunk".into())
+    Vc::cell(rcstr!("chunk group chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -238,7 +238,7 @@ impl ChunkItem for ChunkGroupFilesChunkItem {
 impl Introspectable for ChunkGroupFilesAsset {
     #[turbo_tasks::function]
     fn ty(&self) -> Vc<RcStr> {
-        Vc::cell("chunk group files asset".into())
+        Vc::cell(rcstr!("chunk group files asset"))
     }
 
     #[turbo_tasks::function]
@@ -255,7 +255,7 @@ impl Introspectable for ChunkGroupFilesAsset {
     async fn children(&self) -> Result<Vc<IntrospectableChildren>> {
         let mut children = FxIndexSet::default();
         children.insert((
-            ResolvedVc::cell("inner asset".into()),
+            ResolvedVc::cell(rcstr!("inner asset")),
             IntrospectableModule::new(*ResolvedVc::upcast(self.module))
                 .to_resolved()
                 .await?,

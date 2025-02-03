@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -18,7 +18,7 @@ use crate::chunk::{EcmascriptChunkPlaceable, EcmascriptExports};
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("manifest chunk".into())
+    Vc::cell(rcstr!("manifest chunk"))
 }
 
 /// The manifest module is deferred until requested by the manifest loader
@@ -99,7 +99,7 @@ impl ManifestAsyncModule {
 
 #[turbo_tasks::function]
 fn manifest_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("manifest chunk".into())
+    Vc::cell(rcstr!("manifest chunk"))
 }
 
 #[turbo_tasks::value_impl]

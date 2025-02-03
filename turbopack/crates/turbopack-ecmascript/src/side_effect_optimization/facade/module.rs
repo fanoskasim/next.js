@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
 use anyhow::{bail, Result};
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::{glob::Glob, File, FileContent};
 use turbopack_core::{
@@ -245,7 +246,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                 let esm_exports = esm_exports.await?;
                 if esm_exports.exports.keys().any(|name| name == "default") {
                     exports.insert(
-                        "default".into(),
+                        rcstr!("default"),
                         EsmExport::ImportedBinding(
                             ResolvedVc::upcast(
                                 EcmascriptModulePartReference::new_part(
@@ -255,7 +256,7 @@ impl EcmascriptChunkPlaceable for EcmascriptModuleFacadeModule {
                                 .to_resolved()
                                 .await?,
                             ),
-                            "default".into(),
+                            rcstr!("default"),
                             false,
                         ),
                     );

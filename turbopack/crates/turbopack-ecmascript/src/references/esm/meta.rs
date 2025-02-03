@@ -6,6 +6,7 @@ use swc_core::{
     ecma::ast::{Expr, Ident},
     quote,
 };
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{chunk::ChunkingContext, module_graph::ModuleGraph};
@@ -64,7 +65,7 @@ impl CodeGenerateable for ImportMetaBinding {
         );
 
         Ok(CodeGeneration::hoisted_stmt(
-            "import.meta".into(),
+            rcstr!("import.meta"),
             // [NOTE] url property is lazy-evaluated, as it should be computed once
             // turbopack_runtime injects a function to calculate an absolute path.
             quote!(

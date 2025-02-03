@@ -35,7 +35,7 @@ use regex::Regex;
 use rustc_hash::FxHashMap;
 use sourcemap::decode_data_url;
 use swc_core::{
-    atoms::JsWord,
+    atoms::{atom, JsWord},
     common::{
         comments::{CommentKind, Comments},
         errors::{DiagnosticId, Handler, HANDLER},
@@ -52,7 +52,7 @@ use swc_core::{
     },
 };
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, TryJoinIterExt, Upcast, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -909,8 +909,8 @@ pub(crate) async fn analyse_ecmascript_module_internal(
             AnalyzeIssue::new(
                 IssueSeverity::Error.cell(),
                 source.ident(),
-                Vc::cell("unexpected top level await".into()),
-                StyledString::Text("top level await is only supported in ESM modules.".into())
+                Vc::cell(rcstr!("unexpected top level await")),
+                StyledString::Text(rcstr!("top level await is only supported in ESM modules."))
                     .cell(),
                 None,
                 Some(issue_source(*source, span)),
@@ -3179,7 +3179,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
         ast_path: &mut AstNodePath<AstParentNodeRef<'r>>,
     ) {
         self.esm_exports.insert(
-            "default".into(),
+            rcstr!("default"),
             EsmExport::LocalBinding(magic_identifier::mangle("default export").into(), false),
         );
         self.analysis
@@ -3197,7 +3197,7 @@ impl VisitAstPath for ModuleReferencesVisitor<'_> {
         match &export.decl {
             DefaultDecl::Class(ClassExpr { ident, .. }) | DefaultDecl::Fn(FnExpr { ident, .. }) => {
                 self.esm_exports.insert(
-                    "default".into(),
+                    rcstr!("default"),
                     EsmExport::LocalBinding(
                         ident
                             .as_ref()
@@ -3360,7 +3360,7 @@ async fn resolve_as_webpack_runtime(
 #[turbo_tasks::value(transparent, serialization = "none")]
 pub struct AstPath(#[turbo_tasks(trace_ignore)] Vec<AstParentKind>);
 
-pub static TURBOPACK_HELPER: Lazy<JsWord> = Lazy::new(|| "__turbopack-helper__".into());
+pub static TURBOPACK_HELPER: Lazy<JsWord> = Lazy::new(|| atom!("__turbopack-helper__"));
 
 pub fn is_turbopack_helper_import(import: &ImportDecl) -> bool {
     let annotations = ImportAnnotations::parse(import.with.as_deref());

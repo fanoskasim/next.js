@@ -1,6 +1,6 @@
 use anyhow::{bail, Context, Result};
 use swc_core::{common::DUMMY_SP, ecma::ast::Ident, quote};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 use turbopack_core::{
     chunk::{
@@ -56,7 +56,7 @@ impl ValueToString for EcmascriptModulePartReference {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
         self.part
-            .map_or_else(|| Vc::cell("module".into()), |part| part.to_string())
+            .map_or_else(|| Vc::cell(rcstr!("module")), |part| part.to_string())
     }
 }
 

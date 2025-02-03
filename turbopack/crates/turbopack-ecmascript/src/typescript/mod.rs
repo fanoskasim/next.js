@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde_json::Value as JsonValue;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::DirectoryContent;
 use turbopack_core::{
@@ -82,9 +82,8 @@ impl Module for TsConfigModuleAsset {
             })
             .await?;
             let compiler: RcStr = compiler
-                .map(|(_, c)| c)
-                .unwrap_or_else(|| "typescript".to_string())
-                .into();
+                .map(|(_, c)| c.into())
+                .unwrap_or_else(|| rcstr!("typescript"));
             references.push(ResolvedVc::upcast(
                 CompilerReference::new(*self.origin, Request::parse(Value::new(compiler.into())))
                     .to_resolved()
@@ -138,7 +137,7 @@ impl Module for TsConfigModuleAsset {
                 let mut current = self.source.ident().path().parent().resolve().await?;
                 loop {
                     if let DirectoryContent::Entries(entries) = &*current
-                        .join("node_modules/@types".into())
+                        .join(rcstr!("node_modules/@types"))
                         .read_dir()
                         .await?
                     {

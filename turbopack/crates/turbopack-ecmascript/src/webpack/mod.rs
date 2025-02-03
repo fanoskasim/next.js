@@ -1,6 +1,6 @@
 use anyhow::Result;
 use swc_core::ecma::ast::Lit;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, ValueToString, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -26,7 +26,7 @@ pub(crate) mod references;
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("webpack".into())
+    Vc::cell(rcstr!("webpack"))
 }
 
 #[turbo_tasks::value]
@@ -149,7 +149,7 @@ impl ModuleReference for WebpackEntryAssetReference {
 impl ValueToString for WebpackEntryAssetReference {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("webpack entry".into())
+        Vc::cell(rcstr!("webpack entry"))
     }
 }
 

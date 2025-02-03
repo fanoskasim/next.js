@@ -58,7 +58,7 @@ pub use transform::{
     CustomTransformer, EcmascriptInputTransform, EcmascriptInputTransforms, TransformContext,
     TransformPlugin, UnsupportedServerActionIssue,
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     trace::TraceRawVcs, FxIndexMap, NonLocalValue, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt,
     Value, ValueToString, Vc,
@@ -191,7 +191,7 @@ impl Display for EcmascriptModuleAssetType {
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript".into())
+    Vc::cell(rcstr!("ecmascript"))
 }
 
 #[derive(Clone)]

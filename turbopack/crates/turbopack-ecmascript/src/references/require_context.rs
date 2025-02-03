@@ -12,7 +12,7 @@ use swc_core::{
     },
     quote, quote_expr,
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{primitives::Regex, FxIndexMap, ResolvedVc, Value, ValueToString, Vc};
 use turbo_tasks_fs::{DirectoryContent, DirectoryEntry, FileSystemPath};
 use turbopack_core::{
@@ -330,7 +330,7 @@ impl ModuleReference for ResolvedModuleReference {
 impl ValueToString for ResolvedModuleReference {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("resolved reference".into())
+        Vc::cell(rcstr!("resolved reference"))
     }
 }
 

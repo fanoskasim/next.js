@@ -10,6 +10,7 @@ use petgraph::{
 };
 use rustc_hash::{FxHashMap, FxHashSet};
 use swc_core::{
+    atoms::atom,
     common::{comments::Comments, util::take::Take, Spanned, SyntaxContext, DUMMY_SP},
     ecma::{
         ast::{
@@ -659,7 +660,7 @@ impl DepGraph {
                                     is_type_only: false,
                                 })],
                                 src: if cfg!(test) {
-                                    Some(Box::new("__TURBOPACK_VAR__".into()))
+                                    Some(Box::new(atom!("__TURBOPACK_VAR__").into()))
                                 } else {
                                     None
                                 },
@@ -863,7 +864,7 @@ impl DepGraph {
                                 ),
                                 ExportSpecifier::Default(s) => (
                                     Some(ModuleExportName::Ident(Ident::new(
-                                        "default".into(),
+                                        atom!("default"),
                                         DUMMY_SP,
                                         Default::default(),
                                     ))),
@@ -1004,7 +1005,7 @@ impl DepGraph {
                             items.insert(id, data);
                         }
 
-                        exports.push((default_var.to_id(), "default".into(), false));
+                        exports.push((default_var.to_id(), atom!("default"), false));
                     }
                     ModuleDecl::ExportDefaultExpr(export) => {
                         let default_var =
@@ -1063,7 +1064,7 @@ impl DepGraph {
                         {
                             // For export default __TURBOPACK__default__export__
 
-                            exports.push((default_var.to_id(), "default".into(), false));
+                            exports.push((default_var.to_id(), atom!("default"), false));
                         }
                     }
 
@@ -1376,7 +1377,7 @@ impl DepGraph {
                 ItemData {
                     content: ModuleItem::Stmt(Stmt::Expr(ExprStmt {
                         span: DUMMY_SP,
-                        expr: "module evaluation".into(),
+                        expr: atom!("module evaluation").into(),
                     })),
                     ..Default::default()
                 },

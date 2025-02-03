@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
 use turbo_tasks_fs::glob::Glob;
 use turbopack_core::{
@@ -299,7 +299,7 @@ impl Module for EcmascriptModulePartAsset {
         let part_dep = |part: Vc<ModulePart>| -> Vc<Box<dyn ModuleReference>> {
             Vc::upcast(SingleModuleReference::new(
                 Vc::upcast(EcmascriptModulePartAsset::new(*self.full_module, part)),
-                Vc::cell("ecmascript module part".into()),
+                Vc::cell(rcstr!("ecmascript module part")),
             ))
         };
 

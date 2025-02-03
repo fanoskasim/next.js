@@ -14,7 +14,7 @@ use swc_core::{
     },
     quote, quote_expr,
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     trace::TraceRawVcs, FxIndexMap, NonLocalValue, ResolvedVc, TryFlatJoinIterExt, ValueToString,
     Vc,
@@ -629,7 +629,7 @@ impl CodeGenerateable for EsmExports {
             vec![],
             [dynamic_stmt
                 .clone()
-                .map(|stmt| CodeGenerationHoistedStmt::new("__turbopack_dynamic__".into(), stmt))]
+                .map(|stmt| CodeGenerationHoistedStmt::new(rcstr!("__turbopack_dynamic__"), stmt))]
             .into_iter()
             .flatten()
             .collect(),

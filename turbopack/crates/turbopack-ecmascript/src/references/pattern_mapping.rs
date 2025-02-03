@@ -314,7 +314,7 @@ async fn to_single_pattern_mapping(
         ModuleResolveResultItem::Unknown(source) => {
             emit_unknown_module_type_error(**source).await?;
             return Ok(SinglePatternMapping::Unresolvable(
-                "unknown module type".to_string(),
+                "unknown module type".into(),
             ));
         }
         ModuleResolveResultItem::Error(str) => {

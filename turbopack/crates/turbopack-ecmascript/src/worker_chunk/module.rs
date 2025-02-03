@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -18,7 +18,7 @@ use super::chunk_item::WorkerLoaderChunkItem;
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("worker loader".into())
+    Vc::cell(rcstr!("worker loader"))
 }
 
 /// The WorkerLoaderModule is a module that creates a separate root chunk group for the given module
@@ -121,6 +121,6 @@ impl ModuleReference for WorkerModuleReference {
 impl ValueToString for WorkerModuleReference {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("worker module".into())
+        Vc::cell(rcstr!("worker module"))
     }
 }
