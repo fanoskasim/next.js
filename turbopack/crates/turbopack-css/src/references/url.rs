@@ -6,7 +6,7 @@ use lightningcss::{
     visit_types,
     visitor::{Visit, Visitor},
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{debug::ValueDebug, ResolvedVc, Value, ValueToString, Vc};
 use turbopack_core::{
     chunk::{
@@ -125,7 +125,7 @@ pub async fn resolve_url_reference(
     // currently works as all chunks are in the same directory.
     let chunk_path = chunking_context.chunk_path(
         AssetIdent::from_path(this.origin.origin_path()),
-        ".css".into(),
+        rcstr!(".css"),
     );
     let context_path = chunk_path.parent().await?;
 

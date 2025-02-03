@@ -1,4 +1,5 @@
 use anyhow::Result;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::File;
 use turbopack_core::{
@@ -29,7 +30,7 @@ impl CssChunkSourceMapAsset {
 impl OutputAsset for CssChunkSourceMapAsset {
     #[turbo_tasks::function]
     fn ident(&self) -> Vc<AssetIdent> {
-        AssetIdent::from_path(self.chunk.path().append(".map".into()))
+        AssetIdent::from_path(self.chunk.path().append(rcstr!(".map")))
     }
 }
 

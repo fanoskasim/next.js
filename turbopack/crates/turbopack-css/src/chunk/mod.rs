@@ -4,7 +4,7 @@ pub mod source_map;
 use std::fmt::Write;
 
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, TryJoinIterExt, Value, ValueDefault, ValueToString, Vc};
 use turbo_tasks_fs::{rope::Rope, File, FileSystem};
 use turbopack_core::{
@@ -246,7 +246,7 @@ impl OutputChunk for CssChunk {
 
 #[turbo_tasks::function]
 fn chunk_item_key() -> Vc<RcStr> {
-    Vc::cell("chunk item".into())
+    Vc::cell(rcstr!("chunk item"))
 }
 
 #[turbo_tasks::value_impl]
@@ -305,7 +305,7 @@ impl OutputAsset for CssChunk {
 
         Ok(AssetIdent::from_path(self.chunking_context.chunk_path(
             AssetIdent::new(Value::new(ident)),
-            ".css".into(),
+            rcstr!(".css"),
         )))
     }
 
@@ -412,12 +412,12 @@ pub trait CssChunkItem: ChunkItem {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("css chunk".into())
+    Vc::cell(rcstr!("css chunk"))
 }
 
 #[turbo_tasks::function]
 fn entry_module_key() -> Vc<RcStr> {
-    Vc::cell("entry module".into())
+    Vc::cell(rcstr!("entry module"))
 }
 
 #[turbo_tasks::value_impl]
@@ -481,7 +481,7 @@ pub struct CssChunkType {}
 impl ValueToString for CssChunkType {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("css".into())
+        Vc::cell(rcstr!("css"))
     }
 }
 

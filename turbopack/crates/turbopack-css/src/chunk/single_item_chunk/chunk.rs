@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 use turbo_tasks_fs::File;
 use turbopack_core::{
@@ -98,7 +98,7 @@ impl Chunk for SingleItemCssChunk {
 
 #[turbo_tasks::function]
 fn single_item_modifier() -> Vc<RcStr> {
-    Vc::cell("single item css chunk".into())
+    Vc::cell(rcstr!("single item css chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -110,7 +110,7 @@ impl OutputAsset for SingleItemCssChunk {
                 self.item
                     .asset_ident()
                     .with_modifier(single_item_modifier()),
-                ".css".into(),
+                rcstr!(".css"),
             ),
         )
     }
@@ -155,12 +155,12 @@ impl GenerateSourceMap for SingleItemCssChunk {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("single asset css chunk".into())
+    Vc::cell(rcstr!("single asset css chunk"))
 }
 
 #[turbo_tasks::function]
 fn entry_module_key() -> Vc<RcStr> {
-    Vc::cell("entry module".into())
+    Vc::cell(rcstr!("entry module"))
 }
 
 #[turbo_tasks::value_impl]
