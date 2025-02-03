@@ -1,4 +1,5 @@
 use anyhow::Result;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{fxindexmap, Vc};
 use turbo_tasks_env::{CommandLineProcessEnv, CustomProcessEnv, ProcessEnv};
 use turbo_tasks_fs::FileSystemPath;
@@ -11,7 +12,7 @@ use crate::TryDotenvProcessEnv;
 pub async fn load_env(project_path: Vc<FileSystemPath>) -> Result<Vc<Box<dyn ProcessEnv>>> {
     let env: Vc<Box<dyn ProcessEnv>> = Vc::upcast(CommandLineProcessEnv::new());
 
-    let node_env = env.read("NODE_ENV".into()).await?;
+    let node_env = env.read(rcstr!("NODE_ENV")).await?;
     let node_env = node_env.as_deref().unwrap_or("development");
 
     let env = Vc::upcast(CustomProcessEnv::new(
@@ -26,10 +27,10 @@ pub async fn load_env(project_path: Vc<FileSystemPath>) -> Result<Vc<Box<dyn Pro
         if node_env == "test" {
             None
         } else {
-            Some(".env.local".into())
+            Some(rcstr!(".env.local"))
         },
         Some(format!(".env.{node_env}")),
-        Some(".env".into()),
+        Some(rcstr!(".env")),
     ]
     .into_iter()
     .flatten();
