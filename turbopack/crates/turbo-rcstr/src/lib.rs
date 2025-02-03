@@ -301,8 +301,8 @@ impl Drop for RcStr {
 #[doc(hidden)]
 pub type Cached = Lazy<RcStr>;
 
-/// Creates an instance of [`RcStr`] from a string literal. This `RcStr` is never deallocated, and
-/// repeated calls will never allocate.
+/// Creates a [`RcStr`] from a string constant. This `RcStr` is never deallocated, and repeated
+/// calls will never allocate.
 #[macro_export]
 macro_rules! rcstr {
     ($s:literal) => {{
