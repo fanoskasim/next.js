@@ -10,7 +10,7 @@ pub use custom_module_type::CustomModuleType;
 pub use module_options_context::*;
 pub use module_rule::*;
 pub use rule_condition::*;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::{glob::Glob, FileSystemPath};
 use turbopack_core::{
@@ -152,8 +152,8 @@ impl ModuleOptions {
         if let Some(enable_typeof_window_inlining) = enable_typeof_window_inlining {
             transforms.push(EcmascriptInputTransform::GlobalTypeofs {
                 window_value: match enable_typeof_window_inlining {
-                    TypeofWindow::Object => "object".to_string(),
-                    TypeofWindow::Undefined => "undefined".to_string(),
+                    TypeofWindow::Object => rcstr!("object"),
+                    TypeofWindow::Undefined => rcstr!("undefined"),
                 },
             });
         }
@@ -412,13 +412,13 @@ impl ModuleOptions {
                     .context("execution_context is required for the postcss_transform")?;
 
                 let import_map = if let Some(postcss_package) = options.postcss_package {
-                    package_import_map_from_import_mapping("postcss".into(), *postcss_package)
+                    package_import_map_from_import_mapping(rcstr!("postcss"), *postcss_package)
                 } else {
-                    package_import_map_from_context("postcss".into(), path)
+                    package_import_map_from_context(rcstr!("postcss"), path)
                 };
 
                 rules.push(ModuleRule::new(
-                    RuleCondition::ResourcePathEndsWith(".css".to_string()),
+                    RuleCondition::ResourcePathEndsWith(rcstr!(".css")),
                     vec![ModuleRuleEffect::SourceTransforms(ResolvedVc::cell(vec![
                         ResolvedVc::upcast(
                             PostCssTransform::new(
@@ -542,11 +542,11 @@ impl ModuleOptions {
                 webpack_loaders_options.loader_runner_package
             {
                 package_import_map_from_import_mapping(
-                    "loader-runner".into(),
+                    rcstr!("loader-runner"),
                     *loader_runner_package,
                 )
             } else {
-                package_import_map_from_context("loader-runner".into(), path)
+                package_import_map_from_context(rcstr!("loader-runner"), path)
             };
             for (glob, rule) in webpack_loaders_options.rules.await?.iter() {
                 rules.push(ModuleRule::new(

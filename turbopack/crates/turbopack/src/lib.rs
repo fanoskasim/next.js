@@ -25,7 +25,7 @@ use ecmascript::{
 use graph::{aggregate, AggregatedGraph, AggregatedGraphNodeContent};
 use module_options::{ModuleOptions, ModuleOptionsContext, ModuleRuleEffect, ModuleType};
 use tracing::{field::Empty, Instrument};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, ValueToString, Vc};
 use turbo_tasks_fs::{glob::Glob, FileSystemPath};
 pub use turbopack_core::condition;
@@ -694,7 +694,7 @@ async fn externals_tracing_module_context(ty: ExternalType) -> Result<Vc<ModuleA
         }
         .cell(),
         resolve_options.cell(),
-        Vc::cell("externals-tracing".into()),
+        Vc::cell(rcstr!("externals-tracing")),
     ))
 }
 
@@ -807,7 +807,7 @@ impl AssetContext for ModuleAssetContext {
                                         .enable_externals_tracing,
                                 ) {
                                     let externals_context = externals_tracing_module_context(ty);
-                                    let root_origin = tracing_root.join("_".into());
+                                    let root_origin = tracing_root.join(rcstr!("_"));
 
                                     let external_result = externals_context
                                         .resolve_asset(

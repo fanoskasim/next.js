@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Value, Vc};
 use turbo_tasks_env::ProcessEnv;
 use turbo_tasks_fs::FileSystem;
@@ -44,7 +44,7 @@ pub async fn node_evaluate_asset_context(
     import_map.insert_wildcard_alias(
         "@vercel/turbopack-node/",
         ImportMapping::PrimaryAlternative(
-            "./*".into(),
+            rcstr!("./*"),
             Some(
                 turbopack_node::embed_js::embed_fs()
                     .root()
@@ -56,10 +56,10 @@ pub async fn node_evaluate_asset_context(
     );
     let import_map = import_map.resolved_cell();
     let node_env: RcStr =
-        if let Some(node_env) = &*execution_context.env().read("NODE_ENV".into()).await? {
+        if let Some(node_env) = &*execution_context.env().read(rcstr!("NODE_ENV")).await? {
             node_env.as_str().into()
         } else {
-            "development".into()
+            rcstr!("development")
         };
 
     // base context used for node_modules (and context for app code will be derived
