@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, ValueToString, Vc};
 use turbo_tasks_fs::File;
 
@@ -31,7 +31,7 @@ impl OutputAsset for SourceMapAsset {
     fn ident(&self) -> Vc<AssetIdent> {
         // NOTE(alexkirsz) We used to include the asset's version id in the path,
         // but this caused `all_assets_map` to be recomputed on every change.
-        AssetIdent::from_path(self.asset.ident().path().append(".map".into()))
+        AssetIdent::from_path(self.asset.ident().path().append(rcstr!(".map")))
     }
 }
 
@@ -56,12 +56,12 @@ impl Asset for SourceMapAsset {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("source map".into())
+    Vc::cell(rcstr!("source map"))
 }
 
 #[turbo_tasks::function]
 fn introspectable_details() -> Vc<RcStr> {
-    Vc::cell("source map of an asset".into())
+    Vc::cell(rcstr!("source map of an asset"))
 }
 
 #[turbo_tasks::value_impl]
@@ -85,7 +85,7 @@ impl Introspectable for SourceMapAsset {
     async fn children(&self) -> Result<Vc<IntrospectableChildren>> {
         let mut children = FxIndexSet::default();
         if let Some(asset) = ResolvedVc::try_sidecast::<Box<dyn Introspectable>>(self.asset) {
-            children.insert((ResolvedVc::cell("asset".into()), asset));
+            children.insert((ResolvedVc::cell(rcstr!("asset")), asset));
         }
         Ok(Vc::cell(children))
     }

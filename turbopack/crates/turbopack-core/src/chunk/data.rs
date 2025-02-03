@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ReadRef, ResolvedVc, TryJoinIterExt, Vc};
 use turbo_tasks_fs::FileSystemPath;
 
@@ -29,7 +29,7 @@ pub struct ChunksData(Vec<ResolvedVc<ChunkData>>);
 
 #[turbo_tasks::function]
 fn module_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("module chunk".into())
+    Vc::cell(rcstr!("module chunk"))
 }
 
 #[turbo_tasks::value_impl]

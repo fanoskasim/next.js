@@ -1,3 +1,4 @@
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 
@@ -9,8 +10,8 @@ use super::options::{
 #[turbo_tasks::function]
 pub fn node_cjs_resolve_options(root: ResolvedVc<FileSystemPath>) -> Vc<ResolveOptions> {
     let conditions: ResolutionConditions = [
-        ("node".into(), ConditionValue::Set),
-        ("require".into(), ConditionValue::Set),
+        (rcstr!("node"), ConditionValue::Set),
+        (rcstr!("require"), ConditionValue::Set),
     ]
     .into();
     let extensions = vec![".js".into(), ".json".into(), ".node".into()];
@@ -39,8 +40,8 @@ pub fn node_cjs_resolve_options(root: ResolvedVc<FileSystemPath>) -> Vc<ResolveO
 #[turbo_tasks::function]
 pub fn node_esm_resolve_options(root: ResolvedVc<FileSystemPath>) -> Vc<ResolveOptions> {
     let conditions: ResolutionConditions = [
-        ("node".into(), ConditionValue::Set),
-        ("import".into(), ConditionValue::Set),
+        (rcstr!("node"), ConditionValue::Set),
+        (rcstr!("import"), ConditionValue::Set),
     ]
     .into();
     let extensions = vec![".js".into(), ".json".into(), ".node".into()];

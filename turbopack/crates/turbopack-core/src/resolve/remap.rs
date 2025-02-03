@@ -7,7 +7,7 @@ use std::{
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::FxIndexMap;
 
 use super::{
@@ -383,7 +383,7 @@ impl TryFrom<&Value> for ExportsField {
 
                 if !conditions.is_empty() {
                     map.insert(
-                        AliasPattern::Exact(".".into()),
+                        AliasPattern::Exact(rcstr!(".")),
                         SubpathValue::Conditional(
                             conditions
                                 .into_iter()

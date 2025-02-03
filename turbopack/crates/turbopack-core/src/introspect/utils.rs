@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, Vc};
 use turbo_tasks_fs::FileContent;
 
@@ -15,37 +15,37 @@ use crate::{
 
 #[turbo_tasks::function]
 fn reference_ty() -> Vc<RcStr> {
-    Vc::cell("reference".into())
+    Vc::cell(rcstr!("reference"))
 }
 
 #[turbo_tasks::function]
 fn parallel_reference_ty() -> Vc<RcStr> {
-    Vc::cell("parallel reference".into())
+    Vc::cell(rcstr!("parallel reference"))
 }
 
 #[turbo_tasks::function]
 fn parallel_inherit_async_reference_ty() -> Vc<RcStr> {
-    Vc::cell("parallel reference (inherit async module)".into())
+    Vc::cell(rcstr!("parallel reference (inherit async module)"))
 }
 
 #[turbo_tasks::function]
 fn async_reference_ty() -> Vc<RcStr> {
-    Vc::cell("async reference".into())
+    Vc::cell(rcstr!("async reference"))
 }
 
 #[turbo_tasks::function]
 fn passthrough_reference_ty() -> Vc<RcStr> {
-    Vc::cell("passthrough reference".into())
+    Vc::cell(rcstr!("passthrough reference"))
 }
 
 #[turbo_tasks::function]
 fn isolated_reference_ty() -> Vc<RcStr> {
-    Vc::cell("isolated reference".into())
+    Vc::cell(rcstr!("isolated reference"))
 }
 
 #[turbo_tasks::function]
 fn traced_reference_ty() -> Vc<RcStr> {
-    Vc::cell("traced reference".into())
+    Vc::cell(rcstr!("traced reference"))
 }
 
 #[turbo_tasks::function]
@@ -59,7 +59,7 @@ pub async fn content_to_details(content: Vc<AssetContent>) -> Result<Vc<RcStr>> 
                     Err(_) => Vc::cell(format!("{} binary bytes", content.len()).into()),
                 }
             }
-            FileContent::NotFound => Vc::cell("not found".into()),
+            FileContent::NotFound => Vc::cell(rcstr!("not found")),
         },
         AssetContent::Redirect { target, link_type } => {
             Vc::cell(format!("redirect to {target} with type {link_type:?}").into())

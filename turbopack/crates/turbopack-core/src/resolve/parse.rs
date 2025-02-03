@@ -1,7 +1,7 @@
 use anyhow::{Ok, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 
 use super::pattern::Pattern;
@@ -110,7 +110,7 @@ impl Request {
                 path: Pattern::Constant(path),
                 ..
             } => path.clone(),
-            Request::Empty => "".into(),
+            Request::Empty => rcstr!(""),
             Request::PackageInternal {
                 path: Pattern::Constant(path),
                 ..
@@ -340,12 +340,12 @@ impl Request {
                 Self::parse(Value::new(pat))
             }
             Request::PackageInternal { path } => {
-                let mut pat = Pattern::Constant("./".into());
+                let mut pat = Pattern::Constant(rcstr!("./"));
                 pat.push(path.clone());
                 Self::parse(Value::new(pat))
             }
             Request::Unknown { path } => {
-                let mut pat = Pattern::Constant("./".into());
+                let mut pat = Pattern::Constant(rcstr!("./"));
                 pat.push(path.clone());
                 Self::parse(Value::new(pat))
             }
@@ -649,7 +649,7 @@ impl Request {
             }
             Request::ServerRelative { path, .. } => path.clone(),
             Request::Windows { path, .. } => path.clone(),
-            Request::Empty => Pattern::Constant("".into()),
+            Request::Empty => Pattern::Constant(rcstr!("")),
             Request::PackageInternal { path } => path.clone(),
             Request::Uri {
                 protocol,
@@ -708,7 +708,7 @@ impl ValueToString for Request {
             }
             Request::ServerRelative { path, .. } => format!("server relative {path}").into(),
             Request::Windows { path, .. } => format!("windows {path}").into(),
-            Request::Empty => "empty".into(),
+            Request::Empty => rcstr!("empty"),
             Request::PackageInternal { path } => format!("package internal {path}").into(),
             Request::Uri {
                 protocol,
@@ -716,7 +716,7 @@ impl ValueToString for Request {
                 ..
             } => format!("uri \"{protocol}\" \"{remainder}\"").into(),
             Request::Unknown { path } => format!("unknown {path}").into(),
-            Request::Dynamic => "dynamic".into(),
+            Request::Dynamic => rcstr!("dynamic"),
             Request::Alternatives { requests } => {
                 let vec = requests.iter().map(|i| i.to_string()).try_join().await?;
                 vec.iter()

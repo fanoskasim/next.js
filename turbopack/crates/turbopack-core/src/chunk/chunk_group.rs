@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use auto_hash_map::AutoSet;
 use futures::future::Either;
 use swc_core::alloc::collections::FxHashMap;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{
     FxIndexMap, FxIndexSet, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Value, Vc,
 };
@@ -230,7 +231,7 @@ pub async fn make_chunk_group(
         module_graph,
         *chunking_context,
         Vc::cell(chunk_items),
-        "".into(),
+        rcstr!(""),
         Vc::cell(referenced_output_assets),
     )
     .await?

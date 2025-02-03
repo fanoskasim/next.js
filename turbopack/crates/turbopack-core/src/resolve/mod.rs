@@ -9,7 +9,7 @@ use std::{
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use tracing::{Instrument, Level};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     fxindexmap, trace::TraceRawVcs, FxIndexMap, FxIndexSet, NonLocalValue, OptionVcExt, ResolvedVc,
     TaskInput, TryJoinIterExt, Value, ValueToString, Vc,
@@ -1252,7 +1252,7 @@ pub async fn find_context_file_or_package_key(
     package_key: Value<RcStr>,
 ) -> Result<Vc<FindContextFileResult>> {
     let mut refs = Vec::new();
-    let package_json_path = lookup_path.join("package.json".into());
+    let package_json_path = lookup_path.join(rcstr!("package.json"));
     if let Some(package_json_path) = exists(package_json_path, &mut refs).await? {
         if let Some(json) = &*read_package_json(*package_json_path).await? {
             if json.get(&**package_key).is_some() {
@@ -1446,7 +1446,7 @@ pub async fn resolve_raw(
         .and_then(|pat| pat.filter_could_not_match("/ROOT/fsd8nz8og54z"))
     {
         let path = Pattern::new(pat);
-        let matches = read_matches(lookup_dir.root(), "/ROOT/".into(), true, path).await?;
+        let matches = read_matches(lookup_dir.root(), rcstr!("/ROOT/"), true, path).await?;
         if matches.len() > 10000 {
             let path_str = path.to_string().await?;
             println!(
@@ -1465,7 +1465,7 @@ pub async fn resolve_raw(
     }
 
     {
-        let matches = read_matches(lookup_dir, "".into(), force_in_lookup_dir, path).await?;
+        let matches = read_matches(lookup_dir, rcstr!(""), force_in_lookup_dir, path).await?;
         if matches.len() > 10000 {
             println!(
                 "WARN: resolving pattern {} in {} leads to {} results",
@@ -1762,7 +1762,7 @@ async fn resolve_internal_inline(
                 let mut results = Vec::new();
                 let matches = read_matches(
                     lookup_path,
-                    "".into(),
+                    rcstr!(""),
                     *force_in_lookup_dir,
                     Pattern::new(path.clone()).resolve().await?,
                 )
@@ -1995,7 +1995,7 @@ async fn resolve_into_folder(
     package_path: ResolvedVc<FileSystemPath>,
     options: Vc<ResolveOptions>,
 ) -> Result<Vc<ResolveResult>> {
-    let package_json_path = package_path.join("package.json".into());
+    let package_json_path = package_path.join(rcstr!("package.json"));
     let options_value = options.await?;
 
     for resolve_into_package in options_value.into_package.iter() {
@@ -2026,7 +2026,7 @@ async fn resolve_into_folder(
                         // we are not that strict when a main field fails to resolve
                         // we continue to try other alternatives
                         if !result.is_unresolvable_ref() {
-                            let mut result = result.with_request_ref(".".into());
+                            let mut result = result.with_request_ref(rcstr!("."));
                             result.add_affecting_source_ref(ResolvedVc::upcast(
                                 FileSource::new(package_json_path).to_resolved().await?,
                             ));
@@ -2059,7 +2059,7 @@ async fn resolve_into_folder(
 
     Ok(resolve_internal_inline(*package_path, request, options)
         .await?
-        .with_request(".".into()))
+        .with_request(rcstr!(".")))
 }
 
 #[tracing::instrument(level = Level::TRACE, skip_all)]
@@ -2098,7 +2098,7 @@ async fn resolve_relative_request(
     let fragment_val = fragment.await?;
     if !fragment_val.is_empty() {
         new_path.push(Pattern::Alternatives(
-            once(Pattern::Constant("".into()))
+            once(Pattern::Constant(rcstr!("")))
                 .chain(once(Pattern::Constant(format!("#{fragment_val}").into())))
                 .collect(),
         ));
@@ -2108,7 +2108,7 @@ async fn resolve_relative_request(
         // Add the extensions as alternatives to the path
         // read_matches keeps the order of alternatives intact
         new_path.push(Pattern::Alternatives(
-            once(Pattern::Constant("".into()))
+            once(Pattern::Constant(rcstr!("")))
                 .chain(
                     options_value
                         .extensions
@@ -2164,7 +2164,7 @@ async fn resolve_relative_request(
     let mut results = Vec::new();
     let matches = read_matches(
         lookup_path,
-        "".into(),
+        rcstr!(""),
         force_in_lookup_dir,
         Pattern::new(new_path).resolve().await?,
     )
@@ -2491,7 +2491,7 @@ async fn resolve_module_request(
             FindPackageItem::PackageFile(package_path) => {
                 if path.is_match("") {
                     let resolved = resolved(
-                        RequestKey::new(".".into()),
+                        RequestKey::new(rcstr!(".")),
                         *package_path,
                         lookup_path,
                         request,
@@ -2509,7 +2509,7 @@ async fn resolve_module_request(
 
     let module_result =
         merge_results_with_affecting_sources(results, result.affecting_sources.clone())
-            .with_replaced_request_key(".".into(), Value::new(RequestKey::new(module.into())));
+            .with_replaced_request_key(rcstr!("."), Value::new(RequestKey::new(module.into())));
 
     if options_value.prefer_relative {
         let module_prefix: RcStr = format!("./{module}").into();
@@ -2555,7 +2555,7 @@ async fn resolve_into_package(
                 conditions,
                 unspecified_conditions,
             } => {
-                let package_json_path = package_path.join("package.json".into());
+                let package_json_path = package_path.join(rcstr!("package.json"));
                 let ExportsFieldResult::Some(exports_field) =
                     &*exports_field(package_json_path).await?
                 else {
@@ -2567,7 +2567,7 @@ async fn resolve_into_package(
                 };
 
                 let path = if &*path == "/" {
-                    ".".to_string()
+                    ".".into()
                 } else {
                     format!(".{path}")
                 };
@@ -3131,7 +3131,7 @@ impl ValueToString for ModulePart {
     #[turbo_tasks::function]
     async fn to_string(&self) -> Result<Vc<RcStr>> {
         Ok(Vc::cell(match self {
-            ModulePart::Evaluation => "module evaluation".into(),
+            ModulePart::Evaluation => rcstr!("module evaluation"),
             ModulePart::Export(export) => format!("export {}", export.await?).into(),
             ModulePart::RenamedExport {
                 original_export,
@@ -3146,9 +3146,9 @@ impl ValueToString for ModulePart {
             }
             ModulePart::Internal(id) => format!("internal part {}", id).into(),
             ModulePart::InternalEvaluation(id) => format!("internal part {}", id).into(),
-            ModulePart::Locals => "locals".into(),
-            ModulePart::Exports => "exports".into(),
-            ModulePart::Facade => "facade".into(),
+            ModulePart::Locals => rcstr!("locals"),
+            ModulePart::Exports => rcstr!("exports"),
+            ModulePart::Facade => rcstr!("facade"),
         }))
     }
 }

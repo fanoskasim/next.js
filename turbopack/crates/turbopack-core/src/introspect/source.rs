@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 
 use super::{utils::content_to_details, Introspectable};
@@ -19,7 +19,7 @@ impl IntrospectableSource {
 
 #[turbo_tasks::function]
 fn ty() -> Vc<RcStr> {
-    Vc::cell("source".into())
+    Vc::cell(rcstr!("source"))
 }
 
 #[turbo_tasks::value_impl]

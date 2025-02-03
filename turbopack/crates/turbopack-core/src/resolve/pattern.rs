@@ -10,7 +10,7 @@ use regex::Regex;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     debug::ValueDebugFormat, trace::TraceRawVcs, NonLocalValue, ResolvedVc, Value, ValueToString,
     Vc,
@@ -222,7 +222,7 @@ impl Pattern {
                 Pattern::Constant(c) => {
                     let c_len = c.len();
                     if *chars_to_strip >= c_len {
-                        *c = "".into();
+                        *c = rcstr!("");
                     } else {
                         *c = (&c[*chars_to_strip..]).into();
                     }
@@ -271,7 +271,7 @@ impl Pattern {
                 Pattern::Constant(c) => {
                     let c_len = c.len();
                     if *chars_to_strip >= c_len {
-                        *c = "".into();
+                        *c = rcstr!("");
                     } else {
                         *c = (&c[..(c_len - *chars_to_strip)]).into();
                     }
@@ -478,7 +478,7 @@ impl Pattern {
                             }
                         }
                     }
-                    let separator: RcStr = "/".into();
+                    let separator: RcStr = rcstr!("/");
                     *list = segments
                         .into_iter()
                         .flat_map(|c| {
@@ -1080,7 +1080,7 @@ impl Pattern {
 
     pub fn or_any_nested_file(&self) -> Self {
         let mut new = self.clone();
-        new.push(Pattern::Constant("/".into()));
+        new.push(Pattern::Constant(rcstr!("/")));
         new.push(Pattern::Dynamic);
         new.normalize();
         Pattern::alternatives([self.clone(), new])
@@ -1536,10 +1536,10 @@ pub async fn read_matches(
             }
             if prefix.is_empty() {
                 if let Some(pos) = pat.match_position("./") {
-                    results.push((pos, PatternMatch::Directory("./".into(), lookup_dir)));
+                    results.push((pos, PatternMatch::Directory(rcstr!("./"), lookup_dir)));
                 }
                 if let Some(pos) = pat.could_match_position("./") {
-                    nested.push((pos, read_matches(*lookup_dir, "./".into(), false, pattern)));
+                    nested.push((pos, read_matches(*lookup_dir, rcstr!("./"), false, pattern)));
                 }
             } else {
                 prefix.push('/');
