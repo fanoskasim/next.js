@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{
     glob::Glob, json::parse_json_with_source_context, FileContent, FileSystemPath,
@@ -67,9 +67,9 @@ impl NextFontLocalResolvePlugin {
 impl BeforeResolvePlugin for NextFontLocalResolvePlugin {
     #[turbo_tasks::function]
     fn before_resolve_condition(&self) -> Vc<BeforeResolvePluginCondition> {
-        BeforeResolvePluginCondition::from_request_glob(Glob::new(
-            "{next,@vercel/turbopack-next/internal}/font/local/*".into(),
-        ))
+        BeforeResolvePluginCondition::from_request_glob(Glob::new(rcstr!(
+            "{next,@vercel/turbopack-next/internal}/font/local/*"
+        )))
     }
 
     #[turbo_tasks::function]

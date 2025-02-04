@@ -6,7 +6,7 @@ use swc_core::{
     common::GLOBALS,
     ecma::ast::{Expr, Lit, Program},
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     trace::TraceRawVcs, util::WrapFuture, FxIndexMap, FxIndexSet, NonLocalValue, ResolvedVc,
     TaskInput, ValueDefault, ValueToString, Vc,
@@ -66,7 +66,7 @@ pub async fn pathname_for_path(
     };
     let path = match (path_ty, path) {
         // "/" is special-cased to "/index" for data routes.
-        (PathType::Data, "") => "/index".into(),
+        (PathType::Data, "") => rcstr!("/index"),
         // `get_path_to` always strips the leading `/` from the path, so we need to add
         // it back here.
         (_, path) => format!("/{}", path).into(),
@@ -102,7 +102,7 @@ pub async fn get_transpiled_packages(
 
     let default_transpiled_packages: Vec<RcStr> = load_next_js_templateon(
         project_path,
-        "dist/lib/default-transpiled-packages.json".into(),
+        rcstr!("dist/lib/default-transpiled-packages.json"),
     )
     .await?;
 

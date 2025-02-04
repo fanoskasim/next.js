@@ -3,6 +3,7 @@ use allsorts::{
     Font,
 };
 use anyhow::{bail, Context, Result};
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::{FileContent, FileSystemPath};
 
@@ -39,7 +40,7 @@ pub(super) async fn get_font_fallbacks(
         AdjustFontFallback::Arial => font_fallbacks.push(
             FontFallback::Automatic(AutomaticFontFallback {
                 scoped_font_family: scoped_font_family.to_resolved().await?,
-                local_font_family: ResolvedVc::cell("Arial".into()),
+                local_font_family: ResolvedVc::cell(rcstr!("Arial")),
                 adjustment: Some(
                     get_font_adjustment(lookup_path, options_vc, &DEFAULT_SANS_SERIF_FONT).await?,
                 ),
@@ -49,7 +50,7 @@ pub(super) async fn get_font_fallbacks(
         AdjustFontFallback::TimesNewRoman => font_fallbacks.push(
             FontFallback::Automatic(AutomaticFontFallback {
                 scoped_font_family: scoped_font_family.to_resolved().await?,
-                local_font_family: ResolvedVc::cell("Times New Roman".into()),
+                local_font_family: ResolvedVc::cell(rcstr!("Times New Roman")),
                 adjustment: Some(
                     get_font_adjustment(lookup_path, options_vc, &DEFAULT_SERIF_FONT).await?,
                 ),
@@ -167,7 +168,7 @@ fn pick_font_for_fallback_generation(
 
                 // Prefer normal style if they have the same weight
                 if used_font_distance == current_font_distance
-                    && current_descriptor.style != Some("italic".into())
+                    && current_descriptor.style != Some(rcstr!("italic"))
                 {
                     used_descriptor = current_descriptor;
                     continue;

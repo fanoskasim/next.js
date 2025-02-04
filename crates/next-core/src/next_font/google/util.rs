@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, collections::BTreeSet};
 
 use anyhow::{bail, Context, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::FxIndexSet;
 
 use super::options::{FontData, FontWeights};
@@ -47,8 +47,8 @@ pub(super) fn get_font_axes(
         .axes;
 
     let ital = {
-        let has_italic = styles.contains(&"italic".into());
-        let has_normal = styles.contains(&"normal".into());
+        let has_italic = styles.contains(&rcstr!("italic"));
+        let has_normal = styles.contains(&rcstr!("normal"));
         let mut set = FxIndexSet::default();
         if has_normal {
             set.insert(FontStyle::Normal);

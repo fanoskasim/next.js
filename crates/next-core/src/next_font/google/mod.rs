@@ -4,7 +4,7 @@ use anyhow::{bail, Context, Result};
 use futures::FutureExt;
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Completion, FxIndexMap, ResolvedVc, Value, Vc};
 use turbo_tasks_bytes::stream::SingleValue;
 use turbo_tasks_env::{CommandLineProcessEnv, ProcessEnv};
@@ -95,7 +95,7 @@ impl NextFontGoogleReplacer {
         let fallback = get_font_fallback(*self.project_path, options);
         let properties = get_font_css_properties(options, fallback).await?;
         let js_asset = VirtualSource::new(
-            next_js_file_path("internal/font/google".into())
+            next_js_file_path(rcstr!("internal/font/google"))
                 .join(format!("{}.js", get_request_id(options.font_family(), request_hash).await?).into()),
             AssetContent::file(FileContent::Content(
                 formatdoc!(
@@ -206,7 +206,7 @@ impl NextFontGoogleCssModuleReplacer {
         let stylesheet_url = get_stylesheet_url_from_options(options, font_data);
         let scoped_font_family =
             get_scoped_font_family(FontFamilyType::WebFont.cell(), options.font_family());
-        let css_virtual_path = next_js_file_path("internal/font/google".into()).join(
+        let css_virtual_path = next_js_file_path(rcstr!("internal/font/google")).join(
             format!(
                 "/{}.module.css",
                 get_request_id(options.font_family(), request_hash).await?
@@ -218,7 +218,9 @@ impl NextFontGoogleCssModuleReplacer {
         // process.env.NEXT_FONT_GOOGLE_MOCKED_RESPONSES instead of making real
         // requests to Google Fonts.
         let env = Vc::upcast::<Box<dyn ProcessEnv>>(CommandLineProcessEnv::new());
-        let mocked_responses_path = &*env.read("NEXT_FONT_GOOGLE_MOCKED_RESPONSES".into()).await?;
+        let mocked_responses_path = &*env
+            .read(rcstr!("NEXT_FONT_GOOGLE_MOCKED_RESPONSES"))
+            .await?;
         let stylesheet_str = mocked_responses_path
             .as_ref()
             .map_or_else(
@@ -371,7 +373,7 @@ impl ImportMappingReplacement for NextFontGoogleFontFileReplacer {
             name.push_str(".p")
         }
 
-        let font_virtual_path = next_js_file_path("internal/font/google".into())
+        let font_virtual_path = next_js_file_path(rcstr!("internal/font/google"))
             .join(format!("/{}.{}", name, ext).into())
             .truncate_file_name_with_hash_vc();
 
@@ -402,7 +404,7 @@ impl ImportMappingReplacement for NextFontGoogleFontFileReplacer {
 async fn load_font_data(project_root: ResolvedVc<FileSystemPath>) -> Result<Vc<FontData>> {
     let data: FontData = load_next_js_templateon(
         project_root,
-        "dist/compiled/@next/font/dist/google/font-data.json".into(),
+        rcstr!("dist/compiled/@next/font/dist/google/font-data.json"),
     )
     .await?;
 
@@ -503,7 +505,7 @@ async fn get_stylesheet_url_from_options(
         use turbo_tasks_env::{CommandLineProcessEnv, ProcessEnv};
 
         let env = CommandLineProcessEnv::new();
-        if let Some(url) = &*env.read("TURBOPACK_TEST_ONLY_MOCK_SERVER".into()).await? {
+        if let Some(url) = &*env.read(rcstr!("TURBOPACK_TEST_ONLY_MOCK_SERVER")).await? {
             css_url = Some(format!("{}/css2", url));
         }
     }
@@ -653,7 +655,7 @@ async fn get_mock_stylesheet(
 ) -> Result<Option<Vc<RcStr>>> {
     let response_path = Path::new(&mocked_responses_path);
     let mock_fs = Vc::upcast::<Box<dyn FileSystem>>(DiskFileSystem::new(
-        "mock".into(),
+        rcstr!("mock"),
         response_path
             .parent()
             .context("Must be valid path")?
@@ -669,8 +671,8 @@ async fn get_mock_stylesheet(
         chunking_context,
     } = *execution_context.await?;
     let asset_context =
-        node_evaluate_asset_context(execution_context, None, None, "next_font".into(), false);
-    let loader_path = mock_fs.root().join("loader.js".into());
+        node_evaluate_asset_context(execution_context, None, None, rcstr!("next_font"), false);
+    let loader_path = mock_fs.root().join(rcstr!("loader.js"));
     let mocked_response_asset = asset_context
         .process(
             Vc::upcast(VirtualSource::new(

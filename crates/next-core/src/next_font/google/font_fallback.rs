@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{trace::TraceRawVcs, NonLocalValue, ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::issue::{IssueExt, IssueSeverity, StyledString};
@@ -54,7 +54,7 @@ pub(super) async fn get_font_fallback(
         None => {
             let metrics_json = load_next_js_templateon(
                 lookup_path,
-                "dist/server/capsize-font-metrics.json".into(),
+                rcstr!("dist/server/capsize-font-metrics.json"),
             )
             .await?;
             let fallback = lookup_fallback(

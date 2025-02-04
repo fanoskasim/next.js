@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{trace::TraceRawVcs, NonLocalValue};
 
 /// The top-most structure encoded into the query param in requests to
@@ -111,7 +111,7 @@ fn default_preload() -> bool {
 }
 
 fn default_display() -> RcStr {
-    "swap".into()
+    rcstr!("swap")
 }
 
 #[cfg(test)]
