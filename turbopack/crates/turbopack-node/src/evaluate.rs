@@ -11,6 +11,7 @@ use futures_retry::{FutureRetry, RetryPolicy};
 use parking_lot::Mutex;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{
     apply_effects, duration_span, fxindexmap, mark_finished, prevent_gc, util::SharedError,
     Completion, FxIndexMap, NonLocalValue, OperationVc, RawVc, ResolvedVc, TaskInput,
@@ -95,7 +96,7 @@ async fn emit_evaluate_pool_assets_operation(
 ) -> Result<Vc<EmittedEvaluatePoolAssets>> {
     let runtime_asset = asset_context
         .process(
-            Vc::upcast(FileSource::new(embed_file_path("ipc/evaluate.ts".into()))),
+            Vc::upcast(FileSource::new(embed_file_path(rcstr!("ipc/evaluate.ts")))),
             Value::new(ReferenceType::Internal(
                 InnerAssets::empty().to_resolved().await?,
             )),
@@ -117,7 +118,7 @@ async fn emit_evaluate_pool_assets_operation(
     let entry_module = asset_context
         .process(
             Vc::upcast(VirtualSource::new(
-                runtime_asset.ident().path().join("evaluate.js".into()),
+                runtime_asset.ident().path().join(rcstr!("evaluate.js")),
                 AssetContent::file(
                     File::from("import { run } from 'RUNTIME'; run(() => import('INNER'))").into(),
                 ),
@@ -132,7 +133,7 @@ async fn emit_evaluate_pool_assets_operation(
     let runtime_entries = {
         let globals_module = asset_context
             .process(
-                Vc::upcast(FileSource::new(embed_file_path("globals.ts".into()))),
+                Vc::upcast(FileSource::new(embed_file_path(rcstr!("globals.ts")))),
                 Value::new(ReferenceType::Internal(
                     InnerAssets::empty().to_resolved().await?,
                 )),

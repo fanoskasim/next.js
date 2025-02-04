@@ -6,7 +6,7 @@ use either::Either;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use serde_with::serde_as;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     trace::TraceRawVcs, Completion, NonLocalValue, OperationValue, OperationVc, ResolvedVc,
     TaskInput, TryJoinIterExt, Value, ValueToString, Vc,
@@ -185,9 +185,9 @@ async fn webpack_loaders_executor(
     evaluate_context: Vc<Box<dyn AssetContext>>,
 ) -> Result<Vc<ProcessResult>> {
     Ok(evaluate_context.process(
-        Vc::upcast(FileSource::new(embed_file_path(
-            "transforms/webpack-loaders.ts".into(),
-        ))),
+        Vc::upcast(FileSource::new(embed_file_path(rcstr!(
+            "transforms/webpack-loaders.ts"
+        )))),
         Value::new(ReferenceType::Internal(
             InnerAssets::empty().to_resolved().await?,
         )),
@@ -752,7 +752,7 @@ async fn dir_dependency_shallow(glob: Vc<ReadGlobResult>) -> Result<Vc<Completio
                 file.read().await?;
             }
             DirectoryEntry::Directory(dir) => {
-                dir_dependency(dir.read_glob(Glob::new("**".into()), false)).await?;
+                dir_dependency(dir.read_glob(Glob::new(rcstr!("**")), false)).await?;
             }
             DirectoryEntry::Symlink(symlink) => {
                 symlink.read_link().await?;

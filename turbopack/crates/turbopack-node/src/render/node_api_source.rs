@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde_json::Value as JsonValue;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, Value, Vc};
 use turbo_tasks_env::ProcessEnv;
 use turbo_tasks_fs::FileSystemPath;
@@ -158,7 +158,7 @@ impl GetContentSourceContent for NodeApiContentSource {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("node api content source".into())
+    Vc::cell(rcstr!("node api content source"))
 }
 
 #[turbo_tasks::value_impl]
@@ -190,13 +190,13 @@ impl Introspectable for NodeApiContentSource {
         for &entry in self.entry.entries().await?.iter() {
             let entry = entry.await?;
             set.insert((
-                ResolvedVc::cell("module".into()),
+                ResolvedVc::cell(rcstr!("module")),
                 IntrospectableModule::new(Vc::upcast(*entry.module))
                     .to_resolved()
                     .await?,
             ));
             set.insert((
-                ResolvedVc::cell("intermediate asset".into()),
+                ResolvedVc::cell(rcstr!("intermediate asset")),
                 IntrospectableOutputAsset::new(get_intermediate_asset(
                     *entry.chunking_context,
                     Vc::upcast(*entry.module),
