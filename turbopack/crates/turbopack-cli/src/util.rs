@@ -3,7 +3,7 @@ use std::{env::current_dir, path::PathBuf};
 use anyhow::{Context, Result};
 use dunce::canonicalize;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{NonLocalValue, TaskInput, Vc};
 use turbo_tasks_fs::{DiskFileSystem, FileSystem};
 
@@ -59,14 +59,14 @@ pub fn normalize_entries(entries: &Option<Vec<String>>) -> Vec<RcStr> {
 
 #[turbo_tasks::function]
 pub async fn project_fs(project_dir: RcStr) -> Result<Vc<Box<dyn FileSystem>>> {
-    let disk_fs = DiskFileSystem::new("project".into(), project_dir, vec![]);
+    let disk_fs = DiskFileSystem::new(rcstr!("project"), project_dir, vec![]);
     disk_fs.await?.start_watching(None).await?;
     Ok(Vc::upcast(disk_fs))
 }
 
 #[turbo_tasks::function]
 pub async fn output_fs(project_dir: RcStr) -> Result<Vc<Box<dyn FileSystem>>> {
-    let disk_fs = DiskFileSystem::new("output".into(), project_dir, vec![]);
+    let disk_fs = DiskFileSystem::new(rcstr!("output"), project_dir, vec![]);
     disk_fs.await?.start_watching(None).await?;
     Ok(Vc::upcast(disk_fs))
 }

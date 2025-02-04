@@ -1,7 +1,7 @@
 use std::fmt;
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{FileSystem, FileSystemPath};
 use turbopack::{
@@ -60,7 +60,7 @@ pub async fn get_client_import_map(
     import_map.insert_wildcard_alias(
         "@vercel/turbopack-ecmascript-runtime/",
         ImportMapping::PrimaryAlternative(
-            "./*".into(),
+            rcstr!("./*"),
             Some(
                 turbopack_ecmascript_runtime::embed_fs()
                     .root()
@@ -189,7 +189,7 @@ pub fn get_client_asset_context(
         compile_time_info,
         module_options_context,
         resolve_options_context,
-        Vc::cell("client".into()),
+        Vc::cell(rcstr!("client")),
     ));
 
     asset_context

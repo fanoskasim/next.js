@@ -11,7 +11,7 @@ use std::{
 
 use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     util::{FormatBytes, FormatDuration},
     ResolvedVc, TransientInstance, TurboTasks, UpdateInfo, Value, Vc,
@@ -255,12 +255,12 @@ async fn source(
     let env = load_env(*root_path);
     let build_output_root = output_fs
         .root()
-        .join(".turbopack/build".into())
+        .join(rcstr!(".turbopack/build"))
         .to_resolved()
         .await?;
 
     let build_output_root_to_root_path = project_path
-        .join(".turbopack/build".into())
+        .join(rcstr!(".turbopack/build"))
         .await?
         .get_relative_path_to(&*root_path.await?)
         .context("Project path is in root path")?;
@@ -272,11 +272,11 @@ async fn source(
         build_output_root_to_root_path,
         build_output_root,
         build_output_root
-            .join("chunks".into())
+            .join(rcstr!("chunks"))
             .to_resolved()
             .await?,
         build_output_root
-            .join("assets".into())
+            .join(rcstr!("assets"))
             .to_resolved()
             .await?,
         node_build_environment().to_resolved().await?,
@@ -312,7 +312,7 @@ async fn source(
         execution_context,
         entry_requests,
         server_root,
-        Vc::cell("/ROOT".into()),
+        Vc::cell(rcstr!("/ROOT")),
         env,
         eager_compile,
         NodeEnv::Development.cell(),
@@ -322,7 +322,7 @@ async fn source(
     .to_resolved()
     .await?;
     let static_source = ResolvedVc::upcast(
-        StaticAssetsContentSource::new(Default::default(), project_path.join("public".into()))
+        StaticAssetsContentSource::new(Default::default(), project_path.join(rcstr!("public")))
             .to_resolved()
             .await?,
     );
