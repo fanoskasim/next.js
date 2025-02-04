@@ -3,7 +3,7 @@ use std::iter::once;
 use anyhow::{bail, Context, Result};
 use rustc_hash::FxHashMap;
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -220,7 +220,7 @@ impl NodeJsChunkingContext {
 impl ChunkingContext for NodeJsChunkingContext {
     #[turbo_tasks::function]
     fn name(&self) -> Vc<RcStr> {
-        Vc::cell("unknown".into())
+        Vc::cell(rcstr!("unknown"))
     }
 
     #[turbo_tasks::function]

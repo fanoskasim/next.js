@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, ValueToString, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -42,13 +42,13 @@ impl EcmascriptBuildNodeChunk {
 impl ValueToString for EcmascriptBuildNodeChunk {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("Ecmascript Build Node Chunk".into())
+        Vc::cell(rcstr!("Ecmascript Build Node Chunk"))
     }
 }
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript build node chunk".into())
+    Vc::cell(rcstr!("ecmascript build node chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -69,7 +69,7 @@ impl OutputAsset for EcmascriptBuildNodeChunk {
     #[turbo_tasks::function]
     fn ident(&self) -> Vc<AssetIdent> {
         let ident = self.chunk.ident().with_modifier(modifier());
-        AssetIdent::from_path(self.chunking_context.chunk_path(ident, ".js".into()))
+        AssetIdent::from_path(self.chunking_context.chunk_path(ident, rcstr!(".js")))
     }
 
     #[turbo_tasks::function]
@@ -120,12 +120,14 @@ impl GenerateSourceMap for EcmascriptBuildNodeChunk {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("ecmascript build node chunk".into())
+    Vc::cell(rcstr!("ecmascript build node chunk"))
 }
 
 #[turbo_tasks::function]
 fn introspectable_details() -> Vc<RcStr> {
-    Vc::cell("generates a production EcmaScript chunk targeting Node.js".into())
+    Vc::cell(rcstr!(
+        "generates a production EcmaScript chunk targeting Node.js"
+    ))
 }
 
 #[turbo_tasks::value_impl]
@@ -149,7 +151,7 @@ impl Introspectable for EcmascriptBuildNodeChunk {
     async fn children(&self) -> Result<Vc<IntrospectableChildren>> {
         let mut children = FxIndexSet::default();
         let introspectable_chunk = ResolvedVc::upcast::<Box<dyn Introspectable>>(self.chunk);
-        children.insert((ResolvedVc::cell("chunk".into()), introspectable_chunk));
+        children.insert((ResolvedVc::cell(rcstr!("chunk")), introspectable_chunk));
         Ok(Vc::cell(children))
     }
 }
