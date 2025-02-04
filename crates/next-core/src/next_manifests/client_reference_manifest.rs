@@ -5,7 +5,7 @@ use either::Either;
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     FxIndexSet, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt, Value, ValueToString, Vc,
 };
@@ -277,7 +277,7 @@ impl ClientReferenceManifest {
                         entry_manifest.client_modules.module_exports.insert(
                             get_client_reference_module_key(&server_path, "*"),
                             ManifestNodeEntry {
-                                name: "*".into(),
+                                name: rcstr!("*"),
                                 id: (&*client_module_id).into(),
                                 chunks: client_chunks_paths,
                                 // This should of course be client_is_async, but SSR can become
@@ -290,9 +290,9 @@ impl ClientReferenceManifest {
 
                         let mut ssr_manifest_node = ManifestNode::default();
                         ssr_manifest_node.module_exports.insert(
-                            "*".into(),
+                            rcstr!("*"),
                             ManifestNodeEntry {
-                                name: "*".into(),
+                                name: rcstr!("*"),
                                 id: (&*ssr_module_id).into(),
                                 chunks: ssr_chunks_paths,
                                 // See above
@@ -302,9 +302,9 @@ impl ClientReferenceManifest {
 
                         let mut rsc_manifest_node = ManifestNode::default();
                         rsc_manifest_node.module_exports.insert(
-                            "*".into(),
+                            rcstr!("*"),
                             ManifestNodeEntry {
-                                name: "*".into(),
+                                name: rcstr!("*"),
                                 id: (&*rsc_module_id).into(),
                                 chunks: rsc_chunks_paths,
                                 r#async: rsc_is_async,
@@ -337,7 +337,7 @@ impl ClientReferenceManifest {
             for (server_component, client_chunks) in layout_segment_client_chunks.iter() {
                 let server_component_name = server_component
                     .server_path()
-                    .with_extension("".into())
+                    .with_extension(rcstr!(""))
                     .to_string()
                     .await?;
                 let mut entry_css_files_with_chunk = Vec::new();
@@ -373,7 +373,7 @@ impl ClientReferenceManifest {
                             {
                                 Some(content_file.content().to_str()?.into())
                             } else {
-                                Some("".into())
+                                Some(rcstr!(""))
                             }
                         } else {
                             None

@@ -2,7 +2,7 @@ use std::io::Write;
 
 use anyhow::{bail, Result};
 use serde::Serialize;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{fxindexmap, FxIndexMap, ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{rope::RopeBuilder, File, FileSystemPath};
 use turbopack_core::{
@@ -296,12 +296,12 @@ struct RouteDefinition {
 fn get_route_module_options(page: RcStr, pathname: RcStr) -> PartialRouteModuleOptions {
     PartialRouteModuleOptions {
         definition: RouteDefinition {
-            kind: "PAGES".into(),
+            kind: rcstr!("PAGES"),
             page,
             pathname,
             // The following aren't used in production.
-            bundle_path: "".into(),
-            filename: "".into(),
+            bundle_path: rcstr!(""),
+            filename: rcstr!(""),
         },
     }
 }
