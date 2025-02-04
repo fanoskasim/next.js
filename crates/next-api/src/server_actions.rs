@@ -11,7 +11,7 @@ use next_core::{
     util::NextRuntime,
 };
 use swc_core::{
-    atoms::Atom,
+    atoms::{atom, Atom},
     common::comments::Comments,
     ecma::{
         ast::{
@@ -21,7 +21,7 @@ use swc_core::{
         utils::find_pat_ids,
     },
 };
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexMap, ResolvedVc, TryFlatJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::{self, rope::RopeBuilder, File, FileSystemPath};
 use turbopack_core::{
@@ -86,7 +86,7 @@ pub(crate) async fn create_server_actions_manifest(
 
 #[turbo_tasks::function]
 fn server_actions_loader_modifier() -> Vc<RcStr> {
-    Vc::cell("server actions loader".into())
+    Vc::cell(rcstr!("server actions loader"))
 }
 
 /// Builds the "action loader" entry point, which reexports every found action
@@ -300,7 +300,7 @@ fn all_export_names(program: &Program) -> Vec<Atom> {
                     ModuleItem::ModuleDecl(
                         ModuleDecl::ExportDefaultExpr(..) | ModuleDecl::ExportDefaultDecl(..),
                     ) => {
-                        exports.push("default".into());
+                        exports.push(atom!("default"));
                     }
                     ModuleItem::ModuleDecl(ModuleDecl::ExportDecl(decl)) => match &decl.decl {
                         Decl::Class(c) => {
@@ -333,7 +333,7 @@ fn all_export_names(program: &Program) -> Vec<Atom> {
                                     );
                                 }
                                 ExportSpecifier::Default(_) => {
-                                    exports.push("default".into());
+                                    exports.push(atom!("default"));
                                 }
                                 ExportSpecifier::Namespace(e) => {
                                     exports.push(e.name.atom().clone());

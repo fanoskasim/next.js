@@ -22,7 +22,7 @@ use next_core::{
 };
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     debug::ValueDebugFormat,
     fxindexmap,
@@ -449,7 +449,7 @@ impl ProjectContainer {
             .await?
             .dist_dir
             .as_ref()
-            .map_or_else(|| ".next".into(), |d| d.clone());
+            .map_or_else(|| rcstr!(".next"), |d| d.clone());
 
         Ok(Project {
             root_path,
@@ -633,13 +633,13 @@ impl Project {
 
     #[turbo_tasks::function]
     pub fn client_fs(self: Vc<Self>) -> Vc<Box<dyn FileSystem>> {
-        let virtual_fs = VirtualFileSystem::new_with_name("client-fs".into());
+        let virtual_fs = VirtualFileSystem::new_with_name(rcstr!("client-fs"));
         Vc::upcast(virtual_fs)
     }
 
     #[turbo_tasks::function]
     pub fn output_fs(&self) -> Vc<DiskFileSystem> {
-        DiskFileSystem::new("output".into(), self.project_path.clone(), vec![])
+        DiskFileSystem::new(rcstr!("output"), self.project_path.clone(), vec![])
     }
 
     #[turbo_tasks::function]
@@ -732,7 +732,7 @@ impl Project {
     #[turbo_tasks::function]
     pub(super) async fn should_create_webpack_stats(&self) -> Result<Vc<bool>> {
         Ok(Vc::cell(
-            self.env.read("TURBOPACK_STATS".into()).await?.is_some(),
+            self.env.read(rcstr!("TURBOPACK_STATS")).await?.is_some(),
         ))
     }
 
@@ -747,8 +747,8 @@ impl Project {
                 node_root,
                 self.node_root_to_root_path().to_resolved().await?,
                 node_root,
-                node_root.join("build/chunks".into()).to_resolved().await?,
-                node_root.join("build/assets".into()).to_resolved().await?,
+                node_root.join(rcstr!("build/chunks")).to_resolved().await?,
+                node_root.join(rcstr!("build/assets")).to_resolved().await?,
                 node_build_environment().to_resolved().await?,
                 next_mode.runtime_type(),
             )
@@ -943,7 +943,7 @@ impl Project {
         get_client_chunking_context(
             self.project_root_path(),
             self.client_relative_path(),
-            Vc::cell("/ROOT".into()),
+            Vc::cell(rcstr!("/ROOT")),
             self.next_config().computed_asset_prefix(),
             self.client_compile_time_info().environment(),
             self.next_mode(),
@@ -1247,7 +1247,7 @@ impl Project {
                 self.next_config(),
                 self.execution_context(),
             ),
-            Vc::cell("middleware".into()),
+            Vc::cell(rcstr!("middleware")),
         )))
     }
 
@@ -1333,7 +1333,7 @@ impl Project {
                 self.next_config(),
                 self.execution_context(),
             ),
-            Vc::cell("instrumentation-edge".into()),
+            Vc::cell(rcstr!("instrumentation-edge")),
         )))
     }
 
@@ -1388,7 +1388,7 @@ impl Project {
                 self.next_config(),
                 self.execution_context(),
             ),
-            Vc::cell("instrumentation".into()),
+            Vc::cell(rcstr!("instrumentation")),
         )))
     }
 

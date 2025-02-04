@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde::Serialize;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexMap, FxIndexSet, ResolvedVc, Vc};
 use turbopack_browser::ecmascript::EcmascriptDevChunk;
 use turbopack_core::{
@@ -46,7 +46,7 @@ where
         }
 
         assets.push(WebpackStatsAsset {
-            ty: "asset".into(),
+            ty: rcstr!("asset"),
             name: path.clone().into(),
             chunks: vec![path.into()],
             size: asset_len,

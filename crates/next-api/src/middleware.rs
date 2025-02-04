@@ -10,7 +10,7 @@ use next_core::{
     util::{parse_config_from_source, MiddlewareMatcherKind},
 };
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Completion, ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{self, File, FileContent, FileSystemPath};
 use turbopack_core::{
@@ -83,7 +83,7 @@ impl MiddlewareEndpoint {
             *self.asset_context,
             self.project.project_path(),
             module,
-            "middleware".into(),
+            rcstr!("middleware"),
         )
     }
 
@@ -235,20 +235,20 @@ impl MiddlewareEndpoint {
             files: file_paths_from_root,
             wasm: wasm_paths_to_bindings(wasm_paths_from_root),
             assets: paths_to_bindings(all_assets),
-            name: "middleware".into(),
-            page: "/".into(),
+            name: rcstr!("middleware"),
+            page: rcstr!("/"),
             regions,
             matchers,
             env: this.project.edge_env().await?.clone_value(),
         };
         let middleware_manifest_v2 = MiddlewaresManifestV2 {
-            middleware: [("/".into(), edge_function_definition)]
+            middleware: [(rcstr!("/"), edge_function_definition)]
                 .into_iter()
                 .collect(),
             ..Default::default()
         };
         let middleware_manifest_v2 = VirtualOutputAsset::new(
-            node_root.join("server/middleware/middleware-manifest.json".into()),
+            node_root.join(rcstr!("server/middleware/middleware-manifest.json")),
             AssetContent::file(
                 FileContent::Content(File::from(serde_json::to_string_pretty(
                     &middleware_manifest_v2,

@@ -6,7 +6,7 @@ use next_core::{
     next_server::{get_server_runtime_entries, ServerContextType},
 };
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Completion, ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{File, FileContent, FileSystemPath};
 use turbopack_core::{
@@ -82,7 +82,7 @@ impl InstrumentationEndpoint {
             *self.asset_context,
             self.project.project_path(),
             *userland_module,
-            "instrumentation".into(),
+            rcstr!("instrumentation"),
         )
         .to_resolved()
         .await?;
@@ -162,7 +162,7 @@ impl InstrumentationEndpoint {
             .entry_chunk_group(
                 this.project
                     .node_root()
-                    .join("server/instrumentation.js".into()),
+                    .join(rcstr!("server/instrumentation.js")),
                 *module,
                 get_server_runtime_entries(
                     Value::new(ServerContextType::Instrumentation {
@@ -203,7 +203,7 @@ impl InstrumentationEndpoint {
             let instrumentation_definition = InstrumentationDefinition {
                 files: file_paths_from_root,
                 wasm: wasm_paths_to_bindings(wasm_paths_from_root),
-                name: "instrumentation".into(),
+                name: rcstr!("instrumentation"),
                 ..Default::default()
             };
             let middleware_manifest_v2 = MiddlewaresManifestV2 {
@@ -211,7 +211,7 @@ impl InstrumentationEndpoint {
                 ..Default::default()
             };
             let middleware_manifest_v2 = VirtualOutputAsset::new(
-                node_root.join("server/instrumentation/middleware-manifest.json".into()),
+                node_root.join(rcstr!("server/instrumentation/middleware-manifest.json")),
                 AssetContent::file(
                     FileContent::Content(File::from(serde_json::to_string_pretty(
                         &middleware_manifest_v2,

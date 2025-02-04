@@ -30,7 +30,7 @@ use next_core::{
 };
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     fxindexmap, trace::TraceRawVcs, Completion, FxIndexMap, NonLocalValue, ResolvedVc, TaskInput,
     Value, Vc,
@@ -88,7 +88,7 @@ pub struct PagesProject {
 
 #[turbo_tasks::function]
 fn client_layer() -> Vc<RcStr> {
-    Vc::cell("client".into())
+    Vc::cell(rcstr!("client"))
 }
 
 #[turbo_tasks::value_impl]
@@ -283,7 +283,7 @@ impl PagesProject {
         Ok(if let Some(pages) = self.pages_structure().await?.pages {
             pages.project_path()
         } else {
-            self.project().project_path().join("pages".into())
+            self.project().project_path().join(rcstr!("pages"))
         })
     }
 
@@ -292,11 +292,11 @@ impl PagesProject {
         Ok(TransitionOptions {
             named_transitions: [
                 (
-                    "next-dynamic".into(),
+                    rcstr!("next-dynamic"),
                     ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
                 ),
                 (
-                    "next-dynamic-client".into(),
+                    rcstr!("next-dynamic-client"),
                     ResolvedVc::upcast(
                         NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                             .to_resolved()
@@ -367,7 +367,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.ssr_module_options_context(),
             self.ssr_resolve_options_context(),
-            Vc::cell("ssr".into()),
+            Vc::cell(rcstr!("ssr")),
         )
     }
 
@@ -380,7 +380,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.api_module_options_context(),
             self.ssr_resolve_options_context(),
-            Vc::cell("api".into()),
+            Vc::cell(rcstr!("api")),
         )
     }
 
@@ -391,7 +391,7 @@ impl PagesProject {
             self.project().server_compile_time_info(),
             self.ssr_data_module_options_context(),
             self.ssr_resolve_options_context(),
-            Vc::cell("ssr-data".into()),
+            Vc::cell(rcstr!("ssr-data")),
         )
     }
 
@@ -402,7 +402,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            Vc::cell("edge-ssr".into()),
+            Vc::cell(rcstr!("edge-ssr")),
         )
     }
 
@@ -413,7 +413,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_api_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            Vc::cell("edge-api".into()),
+            Vc::cell(rcstr!("edge-api")),
         )
     }
 
@@ -424,7 +424,7 @@ impl PagesProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_data_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            Vc::cell("edge-ssr-data".into()),
+            Vc::cell(rcstr!("edge-ssr-data")),
         )
     }
 
@@ -617,7 +617,7 @@ impl PagesProject {
         let client_main_module = esm_resolve(
             Vc::upcast(PlainResolveOrigin::new(
                 client_module_context,
-                self.project().project_path().join("_".into()),
+                self.project().project_path().join(rcstr!("_")),
             )),
             Request::parse(Value::new(Pattern::Constant(
                 match *self.project().next_mode().await? {
@@ -1052,7 +1052,7 @@ impl PageEndpoint {
             this.pages_project
                 .project()
                 .node_root()
-                .join("server".into()),
+                .join(rcstr!("server")),
             project.server_chunking_context(true),
             project.edge_chunking_context(true),
             this.pages_project.ssr_runtime_entries(),
@@ -1068,7 +1068,7 @@ impl PageEndpoint {
             this.pages_project
                 .project()
                 .node_root()
-                .join("server/data".into()),
+                .join(rcstr!("server/data")),
             this.pages_project.project().server_chunking_context(true),
             this.pages_project.project().edge_chunking_context(true),
             this.pages_project.ssr_data_runtime_entries(),
@@ -1084,7 +1084,7 @@ impl PageEndpoint {
             this.pages_project
                 .project()
                 .node_root()
-                .join("server".into()),
+                .join(rcstr!("server")),
             this.pages_project.project().server_chunking_context(false),
             this.pages_project.project().edge_chunking_context(false),
             this.pages_project.ssr_runtime_entries(),
@@ -1101,7 +1101,7 @@ impl PageEndpoint {
         let chunk_path = entry_chunk.ident().path().await?;
 
         let asset_path = node_root
-            .join("server".into())
+            .join(rcstr!("server"))
             .await?
             .get_path_to(&chunk_path)
             .context("ssr chunk entry path must be inside the node root")?;

@@ -39,7 +39,7 @@ use next_core::{
 };
 use serde::{Deserialize, Serialize};
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     fxindexmap, fxindexset, trace::TraceRawVcs, Completion, FxIndexSet, NonLocalValue, ResolvedVc,
     TryJoinIterExt, Value, ValueToString, Vc,
@@ -359,21 +359,24 @@ impl AppProject {
                     ecmascript_client_reference_transition.to_resolved().await?,
                 ),
                 (
-                    "next-dynamic".into(),
+                    rcstr!("next-dynamic"),
                     ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
                 ),
                 (
-                    "next-dynamic-client".into(),
+                    rcstr!("next-dynamic-client"),
                     ResolvedVc::upcast(
                         NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                             .to_resolved()
                             .await?,
                     ),
                 ),
-                ("next-ssr".into(), ssr_transition.to_resolved().await?),
-                ("next-shared".into(), shared_transition.to_resolved().await?),
+                (rcstr!("next-ssr"), ssr_transition.to_resolved().await?),
                 (
-                    "next-server-utility".into(),
+                    rcstr!("next-shared"),
+                    shared_transition.to_resolved().await?,
+                ),
+                (
+                    rcstr!("next-server-utility"),
                     ResolvedVc::upcast(NextServerUtilityTransition::new().to_resolved().await?),
                 ),
             ]
@@ -424,7 +427,7 @@ impl AppProject {
             self.project().server_compile_time_info(),
             self.rsc_module_options_context(),
             self.rsc_resolve_options_context(),
-            Vc::cell("app-rsc".into()),
+            Vc::cell(rcstr!("app-rsc")),
         ))
     }
 
@@ -439,7 +442,7 @@ impl AppProject {
             self.project().edge_compile_time_info(),
             self.edge_rsc_module_options_context(),
             self.edge_rsc_resolve_options_context(),
-            Vc::cell("app-edge-rsc".into()),
+            Vc::cell(rcstr!("app-edge-rsc")),
         ))
     }
 
@@ -453,11 +456,11 @@ impl AppProject {
                     .await?,
             ),
             (
-                "next-dynamic".into(),
+                rcstr!("next-dynamic"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
             (
-                "next-dynamic-client".into(),
+                rcstr!("next-dynamic-client"),
                 ResolvedVc::upcast(
                     NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                         .to_resolved()
@@ -465,15 +468,15 @@ impl AppProject {
                 ),
             ),
             (
-                "next-ssr".into(),
+                rcstr!("next-ssr"),
                 ResolvedVc::upcast(self.ssr_transition().to_resolved().await?),
             ),
             (
-                "next-shared".into(),
+                rcstr!("next-shared"),
                 ResolvedVc::upcast(self.shared_transition().to_resolved().await?),
             ),
             (
-                "next-server-utility".into(),
+                rcstr!("next-server-utility"),
                 ResolvedVc::upcast(NextServerUtilityTransition::new().to_resolved().await?),
             ),
         ]
@@ -490,7 +493,7 @@ impl AppProject {
             self.project().server_compile_time_info(),
             self.route_module_options_context(),
             self.route_resolve_options_context(),
-            Vc::cell("app-route".into()),
+            Vc::cell(rcstr!("app-route")),
         ))
     }
 
@@ -504,11 +507,11 @@ impl AppProject {
                     .await?,
             ),
             (
-                "next-dynamic".into(),
+                rcstr!("next-dynamic"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
             (
-                "next-dynamic-client".into(),
+                rcstr!("next-dynamic-client"),
                 ResolvedVc::upcast(
                     NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                         .to_resolved()
@@ -516,15 +519,15 @@ impl AppProject {
                 ),
             ),
             (
-                "next-ssr".into(),
+                rcstr!("next-ssr"),
                 ResolvedVc::upcast(self.edge_ssr_transition().to_resolved().await?),
             ),
             (
-                "next-shared".into(),
+                rcstr!("next-shared"),
                 ResolvedVc::upcast(self.edge_shared_transition().to_resolved().await?),
             ),
             (
-                "next-server-utility".into(),
+                rcstr!("next-server-utility"),
                 ResolvedVc::upcast(NextServerUtilityTransition::new().to_resolved().await?),
             ),
         ]
@@ -540,7 +543,7 @@ impl AppProject {
             self.project().edge_compile_time_info(),
             self.edge_route_module_options_context(),
             self.edge_route_resolve_options_context(),
-            Vc::cell("app-edge-route".into()),
+            Vc::cell(rcstr!("app-edge-route")),
         ))
     }
 
@@ -548,11 +551,11 @@ impl AppProject {
     async fn client_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         let transitions = [
             (
-                "next-dynamic".into(),
+                rcstr!("next-dynamic"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
             (
-                "next-dynamic-client".into(),
+                rcstr!("next-dynamic-client"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
         ]
@@ -567,7 +570,7 @@ impl AppProject {
             self.project().client_compile_time_info(),
             self.client_module_options_context(),
             self.client_resolve_options_context(),
-            Vc::cell("app-client".into()),
+            Vc::cell(rcstr!("app-client")),
         ))
     }
 
@@ -623,11 +626,11 @@ impl AppProject {
     async fn ssr_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         let transitions = [
             (
-                "next-dynamic".into(),
+                rcstr!("next-dynamic"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
             (
-                "next-dynamic-client".into(),
+                rcstr!("next-dynamic-client"),
                 ResolvedVc::upcast(
                     NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                         .to_resolved()
@@ -635,7 +638,7 @@ impl AppProject {
                 ),
             ),
             (
-                "next-shared".into(),
+                rcstr!("next-shared"),
                 ResolvedVc::upcast(self.shared_transition().to_resolved().await?),
             ),
         ]
@@ -650,7 +653,7 @@ impl AppProject {
             self.project().server_compile_time_info(),
             self.ssr_module_options_context(),
             self.ssr_resolve_options_context(),
-            Vc::cell("app-ssr".into()),
+            Vc::cell(rcstr!("app-ssr")),
         ))
     }
 
@@ -666,7 +669,7 @@ impl AppProject {
             self.project().server_compile_time_info(),
             self.ssr_module_options_context(),
             self.ssr_resolve_options_context(),
-            Vc::cell("app-shared".into()),
+            Vc::cell(rcstr!("app-shared")),
         )
     }
 
@@ -674,11 +677,11 @@ impl AppProject {
     async fn edge_ssr_module_context(self: Vc<Self>) -> Result<Vc<ModuleAssetContext>> {
         let transitions = [
             (
-                "next-dynamic".into(),
+                rcstr!("next-dynamic"),
                 ResolvedVc::upcast(NextDynamicTransition::new_marker().to_resolved().await?),
             ),
             (
-                "next-dynamic-client".into(),
+                rcstr!("next-dynamic-client"),
                 ResolvedVc::upcast(
                     NextDynamicTransition::new_client(Vc::upcast(self.client_transition()))
                         .to_resolved()
@@ -686,7 +689,7 @@ impl AppProject {
                 ),
             ),
             (
-                "next-shared".into(),
+                rcstr!("next-shared"),
                 ResolvedVc::upcast(self.edge_shared_transition().to_resolved().await?),
             ),
         ]
@@ -701,7 +704,7 @@ impl AppProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            Vc::cell("app-edge-ssr".into()),
+            Vc::cell(rcstr!("app-edge-ssr")),
         ))
     }
 
@@ -717,7 +720,7 @@ impl AppProject {
             self.project().edge_compile_time_info(),
             self.edge_ssr_module_options_context(),
             self.edge_ssr_resolve_options_context(),
-            Vc::cell("app-edge-shared".into()),
+            Vc::cell(rcstr!("app-edge-shared")),
         )
     }
 
@@ -790,11 +793,11 @@ impl AppProject {
         let client_main_module = cjs_resolve(
             Vc::upcast(PlainResolveOrigin::new(
                 client_module_context,
-                self.project().project_path().join("_".into()),
+                self.project().project_path().join(rcstr!("_")),
             )),
-            Request::parse(Value::new(Pattern::Constant(
-                "next/dist/client/app-next-turbopack.js".into(),
-            ))),
+            Request::parse(Value::new(Pattern::Constant(rcstr!(
+                "next/dist/client/app-next-turbopack.js"
+            )))),
             None,
             false,
         )
@@ -968,12 +971,12 @@ pub fn app_entry_point_to_route(
 
 #[turbo_tasks::function]
 fn client_shared_chunks_modifier() -> Vc<RcStr> {
-    Vc::cell("client-shared-chunks".into())
+    Vc::cell(rcstr!("client-shared-chunks"))
 }
 
 #[turbo_tasks::function]
 fn server_utils_modifier() -> Vc<RcStr> {
-    Vc::cell("server-utils".into())
+    Vc::cell(rcstr!("server-utils"))
 }
 
 #[turbo_tasks::value(transparent)]
@@ -1110,7 +1113,7 @@ impl AppEndpoint {
 
         let client_relative_path = project.client_relative_path();
 
-        let server_path = node_root.join("server".into());
+        let server_path = node_root.join(rcstr!("server"));
 
         let mut server_assets = fxindexset![];
         let mut client_assets = fxindexset![];
@@ -1241,9 +1244,9 @@ impl AppEndpoint {
         // load it as a RawModule.
         let next_package = get_next_package(project.project_path());
         let polyfill_source =
-            FileSource::new(next_package.join("dist/build/polyfills/polyfill-nomodule.js".into()));
+            FileSource::new(next_package.join(rcstr!("dist/build/polyfills/polyfill-nomodule.js")));
         let polyfill_output_path =
-            client_chunking_context.chunk_path(polyfill_source.ident(), ".js".into());
+            client_chunking_context.chunk_path(polyfill_source.ident(), rcstr!(".js"));
         let polyfill_output_asset = ResolvedVc::upcast(
             RawOutput::new(polyfill_output_path, Vc::upcast(polyfill_source))
                 .to_resolved()
@@ -1426,7 +1429,7 @@ impl AppEndpoint {
                 let all_assets =
                     get_asset_paths_from_root(&node_root_value, &all_output_assets).await?;
 
-                let entry_file = "app-edge-has-no-entrypoint".into();
+                let entry_file = rcstr!("app-edge-has-no-entrypoint");
 
                 if emit_manifests {
                     let dynamic_import_entries = collect_next_dynamic_chunks(
