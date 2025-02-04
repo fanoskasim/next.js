@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 use turbo_tasks_fs::{glob::Glob, rope::RopeBuilder};
 use turbopack_core::{
@@ -26,7 +26,7 @@ use turbopack_ecmascript::{
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("hmr-entry".into())
+    Vc::cell(rcstr!("hmr-entry"))
 }
 
 #[turbo_tasks::value(shared)]
@@ -123,7 +123,7 @@ impl HmrEntryModuleReference {
 impl ValueToString for HmrEntryModuleReference {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("entry".into())
+        Vc::cell(rcstr!("entry"))
     }
 }
 

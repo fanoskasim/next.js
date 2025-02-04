@@ -1,4 +1,5 @@
 use anyhow::Result;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{self, FileSystemEntryType, FileSystemPath};
 use turbopack::module_options::{LoaderRuleItem, OptionWebpackRules, WebpackRules};
@@ -83,7 +84,7 @@ pub async fn maybe_add_babel_loader(
                 }
 
                 let loader = WebpackLoaderItem {
-                    loader: "babel-loader".into(),
+                    loader: rcstr!("babel-loader"),
                     options: Default::default(),
                 };
                 if let Some(rule) = rule {
@@ -95,7 +96,7 @@ pub async fn maybe_add_babel_loader(
                         pattern.into(),
                         LoaderRuleItem {
                             loaders: ResolvedVc::cell(vec![loader]),
-                            rename_as: Some("*".into()),
+                            rename_as: Some(rcstr!("*")),
                         },
                     );
                 }
@@ -115,9 +116,9 @@ pub async fn is_babel_loader_available(project_path: Vc<FileSystemPath>) -> Resu
     let result = resolve(
         project_path,
         Value::new(ReferenceType::CommonJs(CommonJsReferenceSubType::Undefined)),
-        Request::parse(Value::new(Pattern::Constant(
-            "babel-loader/package.json".into(),
-        ))),
+        Request::parse(Value::new(Pattern::Constant(rcstr!(
+            "babel-loader/package.json"
+        )))),
         node_cjs_resolve_options(project_path),
     );
     let assets = result.primary_sources().await?;
