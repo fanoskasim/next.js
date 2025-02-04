@@ -1,7 +1,7 @@
 use std::{borrow::Cow, collections::HashSet, fmt::Display};
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ReadRef, ResolvedVc, TryJoinIterExt, Vc};
 use turbo_tasks_fs::{json::parse_json_with_source_context, File};
 use turbopack_core::{
@@ -25,17 +25,17 @@ pub struct IntrospectionSource {
 impl Introspectable for IntrospectionSource {
     #[turbo_tasks::function]
     fn ty(&self) -> Vc<RcStr> {
-        Vc::cell("introspection-source".into())
+        Vc::cell(rcstr!("introspection-source"))
     }
 
     #[turbo_tasks::function]
     fn title(&self) -> Vc<RcStr> {
-        Vc::cell("introspection-source".into())
+        Vc::cell(rcstr!("introspection-source"))
     }
 
     #[turbo_tasks::function]
     fn children(&self) -> Vc<IntrospectableChildren> {
-        let name = ResolvedVc::cell("root".into());
+        let name = ResolvedVc::cell(rcstr!("root"));
         Vc::cell(self.roots.iter().map(|root| (name, *root)).collect())
     }
 }

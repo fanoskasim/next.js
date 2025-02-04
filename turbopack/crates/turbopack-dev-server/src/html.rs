@@ -1,7 +1,7 @@
 use anyhow::Result;
 use mime_guess::mime::TEXT_HTML_UTF_8;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     trace::TraceRawVcs, NonLocalValue, ReadRef, ResolvedVc, TaskInput, TryJoinIterExt, Value, Vc,
 };
@@ -43,7 +43,7 @@ pub struct DevHtmlAsset {
 
 #[turbo_tasks::function]
 fn dev_html_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("dev html chunk".into())
+    Vc::cell(rcstr!("dev html chunk"))
 }
 
 #[turbo_tasks::value_impl]

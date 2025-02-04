@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Completion, ResolvedVc, State, TryJoinIterExt, Value, Vc};
 use turbopack_core::introspect::{Introspectable, IntrospectableChildren};
 
@@ -92,17 +92,17 @@ impl MapGetContentSourceContent for ConditionalContentSourceMapper {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("conditional content source".into())
+    Vc::cell(rcstr!("conditional content source"))
 }
 
 #[turbo_tasks::function]
 fn activator_key() -> Vc<RcStr> {
-    Vc::cell("activator".into())
+    Vc::cell(rcstr!("activator"))
 }
 
 #[turbo_tasks::function]
 fn action_key() -> Vc<RcStr> {
-    Vc::cell("action".into())
+    Vc::cell(rcstr!("action"))
 }
 
 #[turbo_tasks::value_impl]

@@ -1,7 +1,7 @@
 use std::iter::once;
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, Vc};
 use turbopack_core::introspect::{Introspectable, IntrospectableChildren};
 
@@ -165,7 +165,7 @@ impl GetContentSourceContent for PrefixedRouterGetContentSourceContent {
         let prefix = self.mapper.await?.prefix.await?;
         if let Some(path) = path.strip_prefix(&**prefix) {
             if path.is_empty() {
-                return Ok(self.get_content.get("".into(), data));
+                return Ok(self.get_content.get(rcstr!(""), data));
             } else if prefix.is_empty() {
                 return Ok(self.get_content.get(path.into(), data));
             } else if let Some(path) = path.strip_prefix('/') {
@@ -180,7 +180,7 @@ impl GetContentSourceContent for PrefixedRouterGetContentSourceContent {
 impl Introspectable for PrefixedRouterContentSource {
     #[turbo_tasks::function]
     fn ty(&self) -> Vc<RcStr> {
-        Vc::cell("prefixed router content source".into())
+        Vc::cell(rcstr!("prefixed router content source"))
     }
 
     #[turbo_tasks::function]

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Vc};
 use turbopack_core::introspect::{Introspectable, IntrospectableChildren};
 
@@ -30,12 +30,12 @@ impl ContentSource for LazyInstantiatedContentSource {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("lazy instantiated content source".into())
+    Vc::cell(rcstr!("lazy instantiated content source"))
 }
 
 #[turbo_tasks::function]
 fn source_key() -> Vc<RcStr> {
-    Vc::cell("source".into())
+    Vc::cell(rcstr!("source"))
 }
 
 #[turbo_tasks::value_impl]
