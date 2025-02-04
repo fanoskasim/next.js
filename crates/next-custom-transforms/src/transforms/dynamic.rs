@@ -19,6 +19,7 @@ use swc_core::{
     },
     quote,
 };
+use turbo_rcstr::RcStr;
 
 /// Creates a SWC visitor to transform `next/dynamic` calls to have the
 /// corresponding `loadableGenerated` property.
@@ -76,8 +77,8 @@ pub enum NextDynamicMode {
     /// * the ident of the client module (via `dynamic_client_transition_name`) is added to the
     ///   metadata
     Turbopack {
-        dynamic_client_transition_name: String,
-        dynamic_transition_name: String,
+        dynamic_client_transition_name: RcStr,
+        dynamic_transition_name: RcStr,
     },
 }
 
@@ -102,8 +103,8 @@ enum NextDynamicPatcherState {
     /// the given transition under a particular ident.
     #[allow(unused)]
     Turbopack {
-        dynamic_client_transition_name: String,
-        dynamic_transition_name: String,
+        dynamic_client_transition_name: RcStr,
+        dynamic_transition_name: RcStr,
         imports: Vec<TurbopackImport>,
     },
 }

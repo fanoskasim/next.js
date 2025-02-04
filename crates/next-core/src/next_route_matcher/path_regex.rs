@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::rcstr;
 use turbo_tasks::primitives::Regex;
 use turbopack_node::route_matcher::{Param, Params, RouteMatcherRef};
 
@@ -74,7 +73,7 @@ impl PathRegexBuilder {
     /// Creates a new [PathRegexBuilder].
     pub fn new() -> Self {
         Self {
-            regex_str: rcstr!("^"),
+            regex_str: "^".to_string(),
             named_params: Default::default(),
         }
     }

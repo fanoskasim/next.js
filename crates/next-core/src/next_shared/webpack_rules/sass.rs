@@ -23,7 +23,7 @@ pub async fn maybe_add_sass_loader(
         serde_json::json!(["legacy-js-api"])
     };
 
-    sass_options.insert(rcstr!("silenceDeprecations"), silence_deprecations);
+    sass_options.insert("silenceDeprecations".into(), silence_deprecations);
     let mut rules = if let Some(webpack_rules) = webpack_rules {
         webpack_rules.await?.clone_value()
     } else {
