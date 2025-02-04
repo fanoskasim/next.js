@@ -1,6 +1,6 @@
 use anyhow::Result;
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{
     FxIndexMap, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, Value, ValueToString, Vc,
 };
@@ -22,12 +22,12 @@ use crate::{
 
 #[turbo_tasks::function]
 pub fn client_modules_modifier() -> Vc<RcStr> {
-    Vc::cell("client modules".into())
+    Vc::cell(rcstr!("client modules"))
 }
 
 #[turbo_tasks::function]
 pub fn ssr_modules_modifier() -> Vc<RcStr> {
-    Vc::cell("ssr modules".into())
+    Vc::cell(rcstr!("ssr modules"))
 }
 
 #[turbo_tasks::value]
