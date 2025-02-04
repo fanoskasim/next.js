@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use anyhow::{bail, Result};
 use indoc::formatdoc;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -23,7 +23,7 @@ use turbopack_ecmascript::{
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("next/dynamic entry".into())
+    Vc::cell(rcstr!("next/dynamic entry"))
 }
 
 /// A [`NextDynamicEntryModule`] is a marker asset used to indicate which
@@ -43,7 +43,7 @@ impl NextDynamicEntryModule {
 
 #[turbo_tasks::function]
 fn dynamic_ref_description() -> Vc<RcStr> {
-    Vc::cell("next/dynamic reference".into())
+    Vc::cell(rcstr!("next/dynamic reference"))
 }
 
 #[turbo_tasks::value_impl]
@@ -108,8 +108,8 @@ impl EcmascriptChunkPlaceable for NextDynamicEntryModule {
 
         let mut exports = BTreeMap::new();
         exports.insert(
-            "default".into(),
-            EsmExport::ImportedBinding(module_reference, "default".into(), false),
+            rcstr!("default"),
+            EsmExport::ImportedBinding(module_reference, rcstr!("default"), false),
         );
 
         Ok(EcmascriptExports::EsmExports(

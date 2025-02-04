@@ -1,7 +1,7 @@
 use std::iter::once;
 
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexMap, ResolvedVc, Value, Vc};
 use turbo_tasks_env::{EnvMap, ProcessEnv};
 use turbo_tasks_fs::FileSystemPath;
@@ -150,7 +150,7 @@ pub async fn get_server_resolve_options_context(
     // Always load these predefined packages as external.
     let mut external_packages: Vec<RcStr> = load_next_js_templateon(
         project_path,
-        "dist/lib/server-external-packages.json".into(),
+        rcstr!("dist/lib/server-external-packages.json"),
     )
     .await?;
 
@@ -205,7 +205,7 @@ pub async fn get_server_resolve_options_context(
     );
 
     if ty.supports_react_server() {
-        custom_conditions.push("react-server".into());
+        custom_conditions.push(rcstr!("react-server"));
     };
 
     let external_cjs_modules_plugin = if *next_config.bundle_pages_router_dependencies().await? {
@@ -470,7 +470,7 @@ pub async fn get_server_module_options_context(
         conditions
             .iter()
             .cloned()
-            .chain(once("foreign".into()))
+            .chain(once(rcstr!("foreign")))
             .collect(),
     )
     .await?;
@@ -891,9 +891,9 @@ pub async fn get_server_module_options_context(
                 ));
             } else {
                 custom_source_transform_rules.push(get_ecma_transform_rule(
-                    Box::new(ClientDisallowedDirectiveTransformer::new(
-                        "next/dist/client/use-client-disallowed.js".to_string(),
-                    )),
+                    Box::new(ClientDisallowedDirectiveTransformer::new(rcstr!(
+                        "next/dist/client/use-client-disallowed.js"
+                    ))),
                     enable_mdx_rs.is_some(),
                     true,
                 ));
@@ -1000,11 +1000,11 @@ pub async fn get_server_chunking_context_with_client_assets(
         node_root_to_root_path,
         client_root,
         node_root
-            .join("server/chunks/ssr".into())
+            .join(rcstr!("server/chunks/ssr"))
             .to_resolved()
             .await?,
         client_root
-            .join("static/media".into())
+            .join(rcstr!("static/media"))
             .to_resolved()
             .await?,
         environment,
@@ -1058,8 +1058,14 @@ pub async fn get_server_chunking_context(
         node_root,
         node_root_to_root_path,
         node_root,
-        node_root.join("server/chunks".into()).to_resolved().await?,
-        node_root.join("server/assets".into()).to_resolved().await?,
+        node_root
+            .join(rcstr!("server/chunks"))
+            .to_resolved()
+            .await?,
+        node_root
+            .join(rcstr!("server/assets"))
+            .to_resolved()
+            .await?,
         environment,
         next_mode.runtime_type(),
     )
