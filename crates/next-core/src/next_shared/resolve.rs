@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use lazy_static::lazy_static;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{glob::Glob, FileSystemPath};
 use turbopack_core::{
@@ -62,7 +62,7 @@ impl Issue for InvalidImportModuleIssue {
 
     #[turbo_tasks::function]
     fn title(&self) -> Vc<StyledString> {
-        StyledString::Text("Invalid import".into()).cell()
+        StyledString::Text(rcstr!("Invalid import")).cell()
     }
 
     #[turbo_tasks::function]
@@ -162,7 +162,7 @@ pub(crate) fn get_invalid_client_only_resolve_plugin(
 ) -> Vc<InvalidImportResolvePlugin> {
     InvalidImportResolvePlugin::new(
         *root,
-        "client-only".into(),
+        rcstr!("client-only"),
         vec![
             "'client-only' cannot be imported from a Server Component module. It should only be \
              used from a Client Component."
@@ -179,7 +179,7 @@ pub(crate) fn get_invalid_server_only_resolve_plugin(
 ) -> Vc<InvalidImportResolvePlugin> {
     InvalidImportResolvePlugin::new(
         *root,
-        "server-only".into(),
+        rcstr!("server-only"),
         vec![
             "'server-only' cannot be imported from a Client Component module. It should only be \
              used from a Server Component."
@@ -194,7 +194,7 @@ pub(crate) fn get_invalid_styled_jsx_resolve_plugin(
 ) -> Vc<InvalidImportResolvePlugin> {
     InvalidImportResolvePlugin::new(
         *root,
-        "styled-jsx".into(),
+        rcstr!("styled-jsx"),
         vec![
             "'client-only' cannot be imported from a Server Component module. It should only be \
              used from a Client Component."
@@ -226,7 +226,9 @@ impl AfterResolvePlugin for NextExternalResolvePlugin {
     fn after_resolve_condition(&self) -> Vc<AfterResolvePluginCondition> {
         AfterResolvePluginCondition::new(
             self.project_path.root(),
-            Glob::new("**/next/dist/**/*.{external,runtime.dev,runtime.prod}.js".into()),
+            Glob::new(rcstr!(
+                "**/next/dist/**/*.{external,runtime.dev,runtime.prod}.js"
+            )),
         )
     }
 
@@ -285,7 +287,7 @@ impl AfterResolvePlugin for NextNodeSharedRuntimeResolvePlugin {
     fn after_resolve_condition(&self) -> Vc<AfterResolvePluginCondition> {
         AfterResolvePluginCondition::new(
             self.root.root(),
-            Glob::new("**/next/dist/**/*.shared-runtime.js".into()),
+            Glob::new(rcstr!("**/next/dist/**/*.shared-runtime.js")),
         )
     }
 
@@ -412,7 +414,7 @@ impl AfterResolvePlugin for NextSharedRuntimeResolvePlugin {
     fn after_resolve_condition(&self) -> Vc<AfterResolvePluginCondition> {
         AfterResolvePluginCondition::new(
             self.root.root(),
-            Glob::new("**/next/dist/esm/**/*.shared-runtime.js".into()),
+            Glob::new(rcstr!("**/next/dist/esm/**/*.shared-runtime.js")),
         )
     }
 

@@ -891,9 +891,9 @@ pub async fn get_server_module_options_context(
                 ));
             } else {
                 custom_source_transform_rules.push(get_ecma_transform_rule(
-                    Box::new(ClientDisallowedDirectiveTransformer::new(rcstr!(
-                        "next/dist/client/use-client-disallowed.js"
-                    ))),
+                    Box::new(ClientDisallowedDirectiveTransformer::new(
+                        "next/dist/client/use-client-disallowed.js".into(),
+                    )),
                     enable_mdx_rs.is_some(),
                     true,
                 ));

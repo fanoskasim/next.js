@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{fxindexmap, ResolvedVc, TryJoinIterExt, Value, Vc};
 use turbo_tasks_fs::{
     self, rope::RopeBuilder, File, FileContent, FileSystemPath, FileSystemPathOption,
@@ -35,7 +35,7 @@ pub async fn create_page_loader_entry_module(
         StringifyJs(&*pathname.await?)
     )?;
 
-    let page_loader_path = next_js_file_path("entry/page-loader.ts".into());
+    let page_loader_path = next_js_file_path(rcstr!("entry/page-loader.ts"));
     let base_code = page_loader_path.read();
     if let FileContent::Content(base_file) = &*base_code.await? {
         result += base_file.content()
@@ -128,7 +128,7 @@ impl PageLoaderAsset {
 
 #[turbo_tasks::function]
 fn page_loader_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("page loader chunk".into())
+    Vc::cell(rcstr!("page loader chunk"))
 }
 
 #[turbo_tasks::value_impl]
