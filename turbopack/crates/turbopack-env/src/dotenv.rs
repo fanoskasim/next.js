@@ -27,10 +27,10 @@ pub async fn load_env(project_path: Vc<FileSystemPath>) -> Result<Vc<Box<dyn Pro
         if node_env == "test" {
             None
         } else {
-            Some(rcstr!(".env.local"))
+            Some(".env.local".to_string())
         },
         Some(format!(".env.{node_env}")),
-        Some(rcstr!(".env")),
+        Some(".env".to_string()),
     ]
     .into_iter()
     .flatten();
