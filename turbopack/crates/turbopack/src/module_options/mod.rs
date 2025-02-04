@@ -418,7 +418,7 @@ impl ModuleOptions {
                 };
 
                 rules.push(ModuleRule::new(
-                    RuleCondition::ResourcePathEndsWith(rcstr!(".css")),
+                    RuleCondition::ResourcePathEndsWith(".css".to_string()),
                     vec![ModuleRuleEffect::SourceTransforms(ResolvedVc::cell(vec![
                         ResolvedVc::upcast(
                             PostCssTransform::new(
