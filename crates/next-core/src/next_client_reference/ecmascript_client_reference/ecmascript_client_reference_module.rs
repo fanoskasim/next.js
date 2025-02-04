@@ -2,7 +2,7 @@ use std::{io::Write, iter::once};
 
 use anyhow::{bail, Context, Result};
 use indoc::writedoc;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, ValueToString, Vc};
 use turbo_tasks_fs::File;
 use turbopack_core::{
@@ -177,17 +177,17 @@ impl EcmascriptClientReferenceModule {
 
 #[turbo_tasks::function]
 fn client_reference_modifier() -> Vc<RcStr> {
-    Vc::cell("client reference/proxy".into())
+    Vc::cell(rcstr!("client reference/proxy"))
 }
 
 #[turbo_tasks::function]
 fn ecmascript_client_reference_client_ref_modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript client reference to client".into())
+    Vc::cell(rcstr!("ecmascript client reference to client"))
 }
 
 #[turbo_tasks::function]
 fn ecmascript_client_reference_ssr_ref_modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript client reference to ssr".into())
+    Vc::cell(rcstr!("ecmascript client reference to ssr"))
 }
 
 #[turbo_tasks::value_impl]
@@ -215,7 +215,7 @@ impl Module for EcmascriptClientReferenceModule {
                 EcmascriptClientReference::new(
                     *ResolvedVc::upcast(*client_module),
                     ChunkGroupType::Evaluated,
-                    Some("client".into()),
+                    Some(rcstr!("client")),
                     ecmascript_client_reference_client_ref_modifier(),
                 )
                 .to_resolved()
@@ -225,7 +225,7 @@ impl Module for EcmascriptClientReferenceModule {
                 EcmascriptClientReference::new(
                     *ResolvedVc::upcast(*ssr_module),
                     ChunkGroupType::Entry,
-                    Some("ssr".into()),
+                    Some(rcstr!("ssr")),
                     ecmascript_client_reference_ssr_ref_modifier(),
                 )
                 .to_resolved()
@@ -294,7 +294,7 @@ struct EcmascriptClientReferenceProxyChunkItem {
 
 #[turbo_tasks::function]
 fn client_reference_description() -> Vc<RcStr> {
-    Vc::cell("client references".into())
+    Vc::cell(rcstr!("client references"))
 }
 
 #[turbo_tasks::value_impl]

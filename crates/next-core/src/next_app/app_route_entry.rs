@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{fxindexmap, ResolvedVc, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::ModuleAssetContext;
@@ -64,11 +64,10 @@ pub async fn get_app_route_entry(
         .output
         .as_ref()
         .map(|o| match o {
-            OutputType::Standalone => "\"standalone\"".to_string(),
-            OutputType::Export => "\"export\"".to_string(),
+            OutputType::Standalone => rcstr!("\"standalone\""),
+            OutputType::Export => rcstr!("\"export\""),
         })
-        .map(RcStr::from)
-        .unwrap_or_else(|| "\"\"".into());
+        .unwrap_or_else(|| rcstr!("\"\""));
 
     // Load the file from the next.js codebase.
     let virtual_source = load_next_js_template(
