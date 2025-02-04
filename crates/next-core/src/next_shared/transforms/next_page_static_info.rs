@@ -5,6 +5,7 @@ use next_custom_transforms::transforms::page_static_info::{
 };
 use serde_json::Value;
 use swc_core::{atoms::atom, ecma::ast::Program};
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack::module_options::{ModuleRule, ModuleRuleEffect};
@@ -99,7 +100,7 @@ impl CustomTransformer for NextPageStaticInfo {
                         messages.push(format!("- `export const preferredRegion = {}`", regions));
                     }
 
-                    messages.push("Visit https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config for more information.".to_string());
+                    messages.push(rcstr!("Visit https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config for more information."));
 
                     PageStaticInfoIssue {
                         file_path: ctx.file_path,

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{trace::TraceRawVcs, NonLocalValue, ResolvedVc, Value, Vc};
 use turbo_tasks_fs::{self, glob::Glob, FileJsonContent, FileSystemPath};
 use turbopack_core::{
@@ -64,7 +64,7 @@ impl ExternalCjsModulesResolvePlugin {
 
 #[turbo_tasks::function]
 fn condition(root: Vc<FileSystemPath>) -> Vc<AfterResolvePluginCondition> {
-    AfterResolvePluginCondition::new(root, Glob::new("**/node_modules/**".into()))
+    AfterResolvePluginCondition::new(root, Glob::new(rcstr!("**/node_modules/**")))
 }
 
 #[turbo_tasks::value_impl]
@@ -238,7 +238,7 @@ impl AfterResolvePlugin for ExternalCjsModulesResolvePlugin {
                     // have an extension in the request we try to append ".js"
                     // automatically
                     request_str.push_str(".js");
-                    request = request.append_path(".js".into()).resolve().await?;
+                    request = request.append_path(rcstr!(".js")).resolve().await?;
                     continue;
                 }
                 // this can't resolve with node.js from the original location, so bundle it
