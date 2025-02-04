@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexSet, ResolvedVc, ValueToString, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -41,7 +41,7 @@ impl EcmascriptDevChunk {
 impl ValueToString for EcmascriptDevChunk {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("Ecmascript Dev Chunk".into())
+        Vc::cell(rcstr!("Ecmascript Dev Chunk"))
     }
 }
 
@@ -59,7 +59,7 @@ impl OutputChunk for EcmascriptDevChunk {
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript dev chunk".into())
+    Vc::cell(rcstr!("ecmascript dev chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -85,7 +85,7 @@ impl OutputAsset for EcmascriptDevChunk {
     #[turbo_tasks::function]
     fn ident(&self) -> Vc<AssetIdent> {
         let ident = self.chunk.ident().with_modifier(modifier());
-        AssetIdent::from_path(self.chunking_context.chunk_path(ident, ".js".into()))
+        AssetIdent::from_path(self.chunking_context.chunk_path(ident, rcstr!(".js")))
     }
 
     #[turbo_tasks::function]
@@ -144,12 +144,12 @@ impl GenerateSourceMap for EcmascriptDevChunk {
 
 #[turbo_tasks::function]
 fn introspectable_type() -> Vc<RcStr> {
-    Vc::cell("dev ecmascript chunk".into())
+    Vc::cell(rcstr!("dev ecmascript chunk"))
 }
 
 #[turbo_tasks::function]
 fn introspectable_details() -> Vc<RcStr> {
-    Vc::cell("generates a development ecmascript chunk".into())
+    Vc::cell(rcstr!("generates a development ecmascript chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -173,7 +173,7 @@ impl Introspectable for EcmascriptDevChunk {
     async fn children(&self) -> Result<Vc<IntrospectableChildren>> {
         let mut children = FxIndexSet::default();
         let chunk = ResolvedVc::upcast::<Box<dyn Introspectable>>(self.chunk);
-        children.insert((ResolvedVc::cell("chunk".into()), chunk));
+        children.insert((ResolvedVc::cell(rcstr!("chunk")), chunk));
         Ok(Vc::cell(children))
     }
 }

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Value, ValueToString, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -63,28 +63,28 @@ impl EcmascriptDevChunkList {
 impl ValueToString for EcmascriptDevChunkList {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("Ecmascript Dev Chunk List".into())
+        Vc::cell(rcstr!("Ecmascript Dev Chunk List"))
     }
 }
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript dev chunk list".into())
+    Vc::cell(rcstr!("ecmascript dev chunk list"))
 }
 
 #[turbo_tasks::function]
 fn dynamic_modifier() -> Vc<RcStr> {
-    Vc::cell("dynamic".into())
+    Vc::cell(rcstr!("dynamic"))
 }
 
 #[turbo_tasks::function]
 fn chunk_list_chunk_reference_description() -> Vc<RcStr> {
-    Vc::cell("chunk list chunk".into())
+    Vc::cell(rcstr!("chunk list chunk"))
 }
 
 #[turbo_tasks::function]
 fn chunk_key() -> Vc<RcStr> {
-    Vc::cell("chunk".into())
+    Vc::cell(rcstr!("chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -107,7 +107,7 @@ impl OutputAsset for EcmascriptDevChunkList {
 
         let ident = AssetIdent::new(Value::new(ident));
         Ok(AssetIdent::from_path(
-            self.chunking_context.chunk_path(ident, ".js".into()),
+            self.chunking_context.chunk_path(ident, rcstr!(".js")),
         ))
     }
 

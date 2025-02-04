@@ -1,7 +1,7 @@
 use anyhow::{bail, Context, Result};
 use rustc_hash::FxHashMap;
 use tracing::Instrument;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -290,7 +290,7 @@ impl ChunkingContext for BrowserChunkingContext {
         if let Some(name) = &self.name {
             Vc::cell(name.clone())
         } else {
-            Vc::cell("unknown".into())
+            Vc::cell(rcstr!("unknown"))
         }
     }
 
@@ -463,7 +463,7 @@ impl ChunkingContext for BrowserChunkingContext {
                 match input_availability_info {
                     AvailabilityInfo::Root => {}
                     AvailabilityInfo::Untracked => {
-                        ident = ident.with_modifier(Vc::cell("untracked".into()));
+                        ident = ident.with_modifier(Vc::cell(rcstr!("untracked")));
                     }
                     AvailabilityInfo::Complete { available_modules } => {
                         ident = ident.with_modifier(Vc::cell(

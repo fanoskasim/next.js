@@ -3,7 +3,7 @@ use std::io::Write;
 use anyhow::{bail, Result};
 use indoc::writedoc;
 use serde::Serialize;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ReadRef, ResolvedVc, TryJoinIterExt, Value, ValueToString, Vc};
 use turbo_tasks_fs::File;
 use turbopack_core::{
@@ -204,13 +204,13 @@ impl EcmascriptDevEvaluateChunk {
 impl ValueToString for EcmascriptDevEvaluateChunk {
     #[turbo_tasks::function]
     fn to_string(&self) -> Vc<RcStr> {
-        Vc::cell("Ecmascript Dev Evaluate Chunk".into())
+        Vc::cell(rcstr!("Ecmascript Dev Evaluate Chunk"))
     }
 }
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("ecmascript dev evaluate chunk".into())
+    Vc::cell(rcstr!("ecmascript dev evaluate chunk"))
 }
 
 #[turbo_tasks::value_impl]
@@ -241,7 +241,7 @@ impl OutputAsset for EcmascriptDevEvaluateChunk {
 
         let ident = AssetIdent::new(Value::new(ident));
         Ok(AssetIdent::from_path(
-            self.chunking_context.chunk_path(ident, ".js".into()),
+            self.chunking_context.chunk_path(ident, rcstr!(".js")),
         ))
     }
 

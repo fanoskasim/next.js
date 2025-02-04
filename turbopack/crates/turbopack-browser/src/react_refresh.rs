@@ -1,4 +1,5 @@
 use anyhow::Result;
+use turbo_rcstr::rcstr;
 use turbo_tasks::{ResolvedVc, Value, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -12,12 +13,14 @@ use turbopack_resolve::{
 
 #[turbo_tasks::function]
 fn react_refresh_request() -> Vc<Request> {
-    Request::parse_string("@next/react-refresh-utils/dist/runtime".into())
+    Request::parse_string(rcstr!("@next/react-refresh-utils/dist/runtime"))
 }
 
 #[turbo_tasks::function]
 fn react_refresh_request_in_next() -> Vc<Request> {
-    Request::parse_string("next/dist/compiled/@next/react-refresh-utils/dist/runtime".into())
+    Request::parse_string(rcstr!(
+        "next/dist/compiled/@next/react-refresh-utils/dist/runtime"
+    ))
 }
 
 #[turbo_tasks::value]
