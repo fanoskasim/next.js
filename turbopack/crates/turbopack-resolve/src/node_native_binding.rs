@@ -2,7 +2,7 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{FxIndexMap, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, ValueToString, Vc};
 use turbo_tasks_fs::{
     glob::Glob, json::parse_json_rope_with_source_context, DirectoryEntry, FileContent,
@@ -171,8 +171,8 @@ pub async fn resolve_node_pre_gyp_files(
                 for (key, entry) in config_file_dir
                     // TODO
                     // read the dependencies path from `bindings.gyp`
-                    .join("deps/lib".into())
-                    .read_glob(Glob::new("*".into()), false)
+                    .join(rcstr!("deps/lib"))
+                    .read_glob(Glob::new(rcstr!("*")), false)
                     .await?
                     .results
                     .iter()
@@ -275,7 +275,7 @@ pub async fn resolve_node_gyp_build_files(
             Regex::new(r#"['"]target_name['"]\s*:\s*(?:"(.*?)"|'(.*?)')"#)
                 .expect("create napi_build_version regex failed");
     }
-    let binding_gyp_pat = Pattern::new(Pattern::Constant("binding.gyp".into()));
+    let binding_gyp_pat = Pattern::new(Pattern::Constant(rcstr!("binding.gyp")));
     let gyp_file = resolve_raw(context_dir, binding_gyp_pat, true);
     if let [binding_gyp] = &gyp_file.primary_sources().await?[..] {
         let mut merged_affecting_sources =
@@ -289,7 +289,7 @@ pub async fn resolve_node_gyp_build_files(
                         FxIndexMap::with_capacity_and_hasher(captured.len(), Default::default());
                     for found in captured.iter().skip(1).flatten() {
                         let name = found.as_str();
-                        let target_path = context_dir.join("build/Release".into());
+                        let target_path = context_dir.join(rcstr!("build/Release"));
                         let resolved_prebuilt_file = resolve_raw(
                             target_path,
                             Pattern::new(Pattern::Constant(format!("{}.node", name).into())),
@@ -397,7 +397,7 @@ pub async fn resolve_node_bindings_files(
     loop {
         let resolved = resolve_raw(
             root_context_dir,
-            Pattern::new(Pattern::Constant("package.json".into())),
+            Pattern::new(Pattern::Constant(rcstr!("package.json"))),
             true,
         )
         .first_source()

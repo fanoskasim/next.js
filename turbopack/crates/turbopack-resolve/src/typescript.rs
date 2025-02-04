@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Write, mem::take};
 
 use anyhow::Result;
 use serde_json::Value as JsonValue;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{fxindexset, ResolvedVc, Value, ValueDefault, Vc};
 use turbo_tasks_fs::{FileContent, FileJsonContent, FileSystemPath};
 use turbopack_core::{
@@ -149,7 +149,7 @@ async fn resolve_extends(
 
         // An empty extends is treated as "./tsconfig"
         Request::Empty => {
-            let request = Request::parse_string("./tsconfig".into());
+            let request = Request::parse_string(rcstr!("./tsconfig"));
             Ok(resolve(parent_dir,
                 Value::new(ReferenceType::TypeScript(TypeScriptReferenceSubType::Undefined)), request, resolve_options).first_source())
         }
@@ -491,7 +491,7 @@ async fn apply_typescript_types_options(
                 unspecified_conditions,
             } = into
             {
-                conditions.insert("types".into(), ConditionValue::Set);
+                conditions.insert(rcstr!("types"), ConditionValue::Set);
                 Some(ResolveIntoPackage::ExportsField {
                     conditions,
                     unspecified_conditions,
@@ -504,10 +504,10 @@ async fn apply_typescript_types_options(
     resolve_options
         .into_package
         .push(ResolveIntoPackage::MainField {
-            field: "types".into(),
+            field: rcstr!("types"),
         });
     for conditions in get_condition_maps(&mut resolve_options) {
-        conditions.insert("types".into(), ConditionValue::Set);
+        conditions.insert(rcstr!("types"), ConditionValue::Set);
     }
     Ok(resolve_options.into())
 }
