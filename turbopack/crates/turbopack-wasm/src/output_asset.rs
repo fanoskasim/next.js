@@ -1,4 +1,4 @@
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -12,7 +12,7 @@ use crate::source::WebAssemblySource;
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("wasm".into())
+    Vc::cell(rcstr!("wasm"))
 }
 
 /// Emits the [WebAssemblySource] at a chunk path determined by the
@@ -43,7 +43,7 @@ impl OutputAsset for WebAssemblyAsset {
     fn ident(&self) -> Vc<AssetIdent> {
         let ident = self.source.ident().with_modifier(modifier());
 
-        let asset_path = self.chunking_context.chunk_path(ident, ".wasm".into());
+        let asset_path = self.chunking_context.chunk_path(ident, rcstr!(".wasm"));
 
         AssetIdent::from_path(asset_path)
     }

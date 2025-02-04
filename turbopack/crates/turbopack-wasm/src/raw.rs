@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -23,7 +23,7 @@ use crate::{output_asset::WebAssemblyAsset, source::WebAssemblySource};
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("wasm raw".into())
+    Vc::cell(rcstr!("wasm raw"))
 }
 
 /// Exports the relative path to the WebAssembly file without loading it.

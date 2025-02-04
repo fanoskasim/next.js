@@ -1,5 +1,5 @@
 use anyhow::{bail, Context, Result};
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{fxindexmap, ResolvedVc, Value, Vc};
 use turbo_tasks_fs::FileSystemPath;
 use turbopack_core::{
@@ -35,7 +35,7 @@ use crate::{
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("wasm module".into())
+    Vc::cell(rcstr!("wasm module"))
 }
 
 /// Creates a javascript loader which instantiates the WebAssembly source and

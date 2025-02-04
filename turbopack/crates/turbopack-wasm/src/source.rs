@@ -1,5 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use turbo_rcstr::rcstr;
 use turbo_tasks::{trace::TraceRawVcs, NonLocalValue, ResolvedVc, TaskInput, Vc};
 use turbo_tasks_fs::{File, FileContent};
 use turbopack_core::{
@@ -56,7 +57,7 @@ impl Source for WebAssemblySource {
             WebAssemblySourceType::Text => self
                 .source
                 .ident()
-                .with_path(self.source.ident().path().append("_.wasm".into())),
+                .with_path(self.source.ident().path().append(rcstr!("_.wasm"))),
         }
     }
 }
