@@ -16,7 +16,7 @@ pub mod fixed;
 pub mod output_asset;
 
 use anyhow::Result;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
     asset::{Asset, AssetContent},
@@ -41,7 +41,7 @@ use self::output_asset::StaticAsset;
 
 #[turbo_tasks::function]
 fn modifier() -> Vc<RcStr> {
-    Vc::cell("static".into())
+    Vc::cell(rcstr!("static"))
 }
 
 #[turbo_tasks::value]
