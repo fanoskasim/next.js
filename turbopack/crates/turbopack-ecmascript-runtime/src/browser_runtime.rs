@@ -2,7 +2,7 @@ use std::io::Write;
 
 use anyhow::Result;
 use indoc::writedoc;
-use turbo_rcstr::RcStr;
+use turbo_rcstr::{rcstr, RcStr};
 use turbo_tasks::{Value, Vc};
 use turbopack_core::{
     code_builder::{Code, CodeBuilder},
@@ -26,7 +26,7 @@ pub async fn get_browser_runtime_code(
 
     let shared_runtime_utils_code = embed_static_code(
         asset_context,
-        "shared/runtime-utils.ts".into(),
+        rcstr!("shared/runtime-utils.ts"),
         generate_source_map,
     );
 
@@ -109,7 +109,7 @@ pub async fn get_browser_runtime_code(
         code.push_code(
             &*embed_static_code(
                 asset_context,
-                "shared-node/base-externals-utils.ts".into(),
+                rcstr!("shared-node/base-externals-utils.ts"),
                 generate_source_map,
             )
             .await?,
@@ -119,7 +119,7 @@ pub async fn get_browser_runtime_code(
         code.push_code(
             &*embed_static_code(
                 asset_context,
-                "shared-node/node-externals-utils.ts".into(),
+                rcstr!("shared-node/node-externals-utils.ts"),
                 generate_source_map,
             )
             .await?,
@@ -129,7 +129,7 @@ pub async fn get_browser_runtime_code(
         code.push_code(
             &*embed_static_code(
                 asset_context,
-                "shared-node/node-wasm-utils.ts".into(),
+                rcstr!("shared-node/node-wasm-utils.ts"),
                 generate_source_map,
             )
             .await?,
