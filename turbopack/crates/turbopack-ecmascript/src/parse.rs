@@ -339,13 +339,13 @@ async fn parse_file_content(
             ));
             drop(span);
 
-            let future=  {
+            {
                 let globals= globals.clone();
                 let handler= handler.clone();
                 let source_map = source_map.clone();
                 let mut  parsed_program = parsed_program.clone();
 
-                tokio::task::spawn_blocking(move||{
+                rayon::spawn(move || {
                     let span = tracing::trace_span!("swc_lint").entered();
 
 
@@ -419,8 +419,6 @@ async fn parse_file_content(
                 Some(&comments),
                 Some(source),
             );
-
-            future.await?;
 
             Ok::<ParseResult, anyhow::Error>(ParseResult::Ok {
                 program: parsed_program,
