@@ -348,18 +348,19 @@ async fn parse_file_content(
                 tokio::task::spawn_blocking(move||{
                     let span = tracing::trace_span!("swc_lint").entered();
 
-                    let lint_config = LintConfig::default();
-                    let rules = swc_core::ecma::lints::rules::all(LintParams {
-                        program: &parsed_program,
-                        lint_config: &lint_config,
-                        unresolved_ctxt: SyntaxContext::empty().apply_mark(unresolved_mark),
-                        top_level_ctxt: SyntaxContext::empty().apply_mark(top_level_mark),
-                        es_version: EsVersion::latest(),
-                        source_map: source_map.clone(),
-                    });
+
 
                     GLOBALS.set(&globals, || {
                         HANDLER.set(&handler, || {
+                            let lint_config = LintConfig::default();
+                            let rules = swc_core::ecma::lints::rules::all(LintParams {
+                                program: &parsed_program,
+                                lint_config: &lint_config,
+                                unresolved_ctxt: SyntaxContext::empty().apply_mark(unresolved_mark),
+                                top_level_ctxt: SyntaxContext::empty().apply_mark(top_level_mark),
+                                es_version: EsVersion::latest(),
+                                source_map: source_map.clone(),
+                            });
                             parsed_program.mutate(swc_core::ecma::lints::rules::lint_pass(rules));
                         })
                     });
