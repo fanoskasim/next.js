@@ -9730,6 +9730,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "petgraph",
+ "rayon",
  "regex",
  "rustc-hash 2.1.0",
  "serde",
