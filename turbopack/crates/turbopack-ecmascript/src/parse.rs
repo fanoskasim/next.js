@@ -232,7 +232,7 @@ async fn parse_file_content(
         source_map.clone(),
         Some("Ecmascript file had an error".into()),
     );
-    let handler = Handler::with_emitter(true, false, Box::new(emitter));
+    let handler = Arc::new(Handler::with_emitter(true, false, Box::new(emitter)));
 
     let (emitter, collector_parse) = IssueEmitter::new(
         source,
@@ -339,25 +339,31 @@ async fn parse_file_content(
             ));
             drop(span);
 
-         let future=  {
+            let future=  {
+                let globals= globals.clone();
+                let handler= handler.clone();
                 let source_map = source_map.clone();
                 let mut  parsed_program = parsed_program.clone();
 
                 tokio::task::spawn_blocking(move||{
                     let span = tracing::trace_span!("swc_lint").entered();
 
-            let lint_config = LintConfig::default();
-            let rules = swc_core::ecma::lints::rules::all(LintParams {
-                program: &parsed_program,
-                lint_config: &lint_config,
-                unresolved_ctxt: SyntaxContext::empty().apply_mark(unresolved_mark),
-                top_level_ctxt: SyntaxContext::empty().apply_mark(top_level_mark),
-                es_version: EsVersion::latest(),
-                source_map: source_map.clone(),
-            });
+                    let lint_config = LintConfig::default();
+                    let rules = swc_core::ecma::lints::rules::all(LintParams {
+                        program: &parsed_program,
+                        lint_config: &lint_config,
+                        unresolved_ctxt: SyntaxContext::empty().apply_mark(unresolved_mark),
+                        top_level_ctxt: SyntaxContext::empty().apply_mark(top_level_mark),
+                        es_version: EsVersion::latest(),
+                        source_map: source_map.clone(),
+                    });
 
-            parsed_program.mutate(swc_core::ecma::lints::rules::lint_pass(rules));
-            drop(span);
+                    GLOBALS.set(&globals, || {
+                        HANDLER.set(&handler, || {
+                            parsed_program.mutate(swc_core::ecma::lints::rules::lint_pass(rules));
+                        })
+                    });
+                    drop(span);
                 })
             };
 
