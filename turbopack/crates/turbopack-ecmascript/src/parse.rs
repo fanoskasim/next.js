@@ -339,7 +339,12 @@ async fn parse_file_content(
             ));
             drop(span);
 
-            let span = tracing::trace_span!("swc_lint").entered();
+         let future=  {
+                let source_map = source_map.clone();
+                let mut  parsed_program = parsed_program.clone();
+
+                tokio::task::spawn_blocking(move||{
+                    let span = tracing::trace_span!("swc_lint").entered();
 
             let lint_config = LintConfig::default();
             let rules = swc_core::ecma::lints::rules::all(LintParams {
@@ -353,6 +358,8 @@ async fn parse_file_content(
 
             parsed_program.mutate(swc_core::ecma::lints::rules::lint_pass(rules));
             drop(span);
+                })
+            };
 
             parsed_program.mutate(swc_core::ecma::transforms::proposal::explicit_resource_management::explicit_resource_management());
 
@@ -405,6 +412,8 @@ async fn parse_file_content(
                 Some(&comments),
                 Some(source),
             );
+
+            future.await?;
 
             Ok::<ParseResult, anyhow::Error>(ParseResult::Ok {
                 program: parsed_program,
