@@ -447,8 +447,20 @@ struct AnalysisState<'a> {
 }
 
 impl AnalysisState<'_> {
+    fn link_value<'a>(
+        &'a self,
+        value: JsValue,
+        attributes: &'a ImportAttributes,
+    ) -> Pin<Box<dyn 'a + Future<Output = Result<JsValue>> + Send + Sync>> {
+        Box::pin(self.link_value_internal(value, attributes))
+    }
+
     /// Links a value to the graph, returning the linked value.
-    async fn link_value(&self, value: JsValue, attributes: &ImportAttributes) -> Result<JsValue> {
+    async fn link_value_internal(
+        &self,
+        value: JsValue,
+        attributes: &ImportAttributes,
+    ) -> Result<JsValue> {
         Ok(link(
             self.var_graph,
             value,
@@ -1474,14 +1486,40 @@ async fn compile_time_info_for_module_type(
     .cell())
 }
 
-async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
+fn handle_call<'a>(
+    ast_path: &'a [AstParentKind],
+    span: Span,
+    func: JsValue,
+    this: JsValue,
+    args: Vec<EffectArg>,
+    state: &'a AnalysisState<'_>,
+    add_effects: &'a (dyn Fn(Vec<Effect>) + Send + Sync),
+    analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
+    in_try: bool,
+    new: bool,
+) -> Pin<Box<dyn 'a + Future<Output = Result<()>> + Send + Sync>> {
+    Box::pin(handle_call_internal(
+        ast_path,
+        span,
+        func,
+        this,
+        args,
+        state,
+        add_effects,
+        analysis,
+        in_try,
+        new,
+    ))
+}
+
+async fn handle_call_internal(
     ast_path: &[AstParentKind],
     span: Span,
     func: JsValue,
     this: JsValue,
     args: Vec<EffectArg>,
     state: &AnalysisState<'_>,
-    add_effects: &G,
+    add_effects: &(dyn Fn(Vec<Effect>) + Send + Sync),
     analysis: &mut AnalyzeEcmascriptModuleResultBuilder,
     in_try: bool,
     new: bool,
@@ -2345,7 +2383,20 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
     Ok(())
 }
 
-async fn handle_member(
+fn handle_member<'a>(
+    ast_path: &'a [AstParentKind],
+    link_obj: Pin<Box<dyn 'a + Future<Output = Result<JsValue>> + Send + Sync>>,
+    prop: JsValue,
+    span: Span,
+    state: &'a AnalysisState<'_>,
+    analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
+) -> Pin<Box<dyn 'a + Future<Output = Result<()>> + Send + Sync>> {
+    Box::pin(handle_member_internal(
+        ast_path, link_obj, prop, span, state, analysis,
+    ))
+}
+
+async fn handle_member_internal(
     ast_path: &[AstParentKind],
     link_obj: Pin<Box<dyn '_ + Future<Output = Result<JsValue>> + Send + Sync>>,
     prop: JsValue,
