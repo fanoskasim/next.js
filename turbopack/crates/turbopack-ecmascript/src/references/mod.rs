@@ -2487,7 +2487,19 @@ async fn handle_typeof_internal(
     Ok(())
 }
 
-async fn handle_free_var(
+fn handle_free_var<'a>(
+    ast_path: &'a [AstParentKind],
+    var: JsValue,
+    span: Span,
+    state: &'a AnalysisState<'_>,
+    analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
+) -> Pin<Box<dyn 'a + Future<Output = Result<()>> + Send + Sync>> {
+    Box::pin(handle_free_var_internal(
+        ast_path, var, span, state, analysis,
+    ))
+}
+
+async fn handle_free_var_internal(
     ast_path: &[AstParentKind],
     var: JsValue,
     span: Span,
@@ -2515,7 +2527,19 @@ async fn handle_free_var(
     Ok(())
 }
 
-async fn handle_free_var_reference(
+fn handle_free_var_reference<'a>(
+    ast_path: &'a [AstParentKind],
+    value: &'a FreeVarReference,
+    span: Span,
+    state: &'a AnalysisState<'_>,
+    analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
+) -> Pin<Box<dyn 'a + Future<Output = Result<bool>> + Send + Sync>> {
+    Box::pin(handle_free_var_reference_internal(
+        ast_path, value, span, state, analysis,
+    ))
+}
+
+async fn handle_free_var_reference_internal(
     ast_path: &[AstParentKind],
     value: &FreeVarReference,
     span: Span,
