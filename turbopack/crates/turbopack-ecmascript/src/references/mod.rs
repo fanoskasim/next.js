@@ -18,7 +18,9 @@ pub mod unreachable;
 pub mod util;
 pub mod worker;
 
-use std::{borrow::Cow, collections::BTreeMap, future::Future, mem::take, ops::Deref, sync::Arc};
+use std::{
+    borrow::Cow, collections::BTreeMap, future::Future, mem::take, ops::Deref, pin::Pin, sync::Arc,
+};
 
 use anyhow::{bail, Result};
 use constant_condition::{ConstantConditionCodeGen, ConstantConditionValue};
@@ -1303,7 +1305,8 @@ pub(crate) async fn analyse_ecmascript_module_internal(
                     in_try: _,
                 } => {
                     // Intentionally not awaited because `handle_member` reads this only when neeed.
-                    let obj = analysis_state.link_value(*obj, ImportAttributes::empty_ref());
+                    let obj =
+                        Box::pin(analysis_state.link_value(*obj, ImportAttributes::empty_ref()));
 
                     let prop = analysis_state
                         .link_value(*prop, ImportAttributes::empty_ref())
@@ -2344,7 +2347,7 @@ async fn handle_call<G: Fn(Vec<Effect>) + Send + Sync>(
 
 async fn handle_member(
     ast_path: &[AstParentKind],
-    link_obj: impl Future<Output = Result<JsValue>> + Send + Sync,
+    link_obj: Pin<Box<dyn '_ + Future<Output = Result<JsValue>> + Send + Sync>>,
     prop: JsValue,
     span: Span,
     state: &AnalysisState<'_>,
