@@ -2454,7 +2454,17 @@ async fn handle_member_internal(
     Ok(())
 }
 
-async fn handle_typeof(
+fn handle_typeof<'a>(
+    ast_path: &'a [AstParentKind],
+    arg: JsValue,
+    span: Span,
+    state: &'a AnalysisState<'_>,
+    analysis: &'a mut AnalyzeEcmascriptModuleResultBuilder,
+) -> Pin<Box<dyn 'a + Future<Output = Result<()>> + Send + Sync>> {
+    Box::pin(handle_typeof_internal(ast_path, arg, span, state, analysis))
+}
+
+async fn handle_typeof_internal(
     ast_path: &[AstParentKind],
     arg: JsValue,
     span: Span,
