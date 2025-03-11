@@ -672,5 +672,6 @@
   "671": "Specified images.remotePatterns must have protocol \"http\" or \"https\" received \"%s\".",
   "672": "Expected `telemetry` to be set in globals",
   "673": "Failed to find Server Action \"%s\". This request might be from an older or newer deployment.%s\\nRead more: https://nextjs.org/docs/messages/failed-to-find-server-action",
-  "674": "This function cannot be used in the edge runtime"
+  "674": "This function cannot be used in the edge runtime",
+  "675": "Action handler not found in action module"
 }
