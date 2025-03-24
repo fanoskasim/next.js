@@ -42,6 +42,8 @@ import {
 import { preloadStyle, preloadFont, preconnect } from './rsc/preloads'
 import { Postpone } from './rsc/postpone'
 import { taintObjectReference } from './rsc/taint'
+import { DevToolNode } from '../../shared/lib/devtool-node'
+
 export { collectSegmentData } from './collect-segment-data'
 
 // patchFetch makes use of APIs such as `React.unstable_postpone` which are only available
@@ -79,4 +81,6 @@ export {
   HTTPAccessFallbackBoundary,
   patchFetch,
   createMetadataComponents,
+
+  DevToolNode,
 }

@@ -250,6 +250,7 @@ interface ParsedRequestHeaders {
   readonly isRSCRequest: boolean
   readonly nonce: string | undefined
   readonly previouslyRevalidatedTags: string[]
+  readonly isRenderedTreeRequest: boolean
 }
 
 function parseRequestHeaders(
@@ -283,6 +284,9 @@ function parseRequestHeaders(
   const isRouteTreePrefetchRequest =
     headers[NEXT_ROUTER_SEGMENT_PREFETCH_HEADER.toLowerCase()] === '/_tree'
 
+  const isRenderedTreeRequest = 
+      headers['next_rendered_tree'] === '1'
+
   const csp =
     headers['content-security-policy'] ||
     headers['content-security-policy-report-only']
@@ -304,6 +308,7 @@ function parseRequestHeaders(
     isDevWarmupRequest,
     nonce,
     previouslyRevalidatedTags,
+    isRenderedTreeRequest,
   }
 }
 
