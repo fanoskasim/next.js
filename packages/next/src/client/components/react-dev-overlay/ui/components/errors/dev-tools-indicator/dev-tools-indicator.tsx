@@ -11,6 +11,7 @@ import { TurbopackInfo } from './dev-tools-info/turbopack-info'
 import { RouteInfo } from './dev-tools-info/route-info'
 import GearIcon from '../../../icons/gear-icon'
 import { UserPreferences } from './dev-tools-info/user-preferences'
+import { RenderedFiles } from './dev-tools-info/rendered-files'
 import {
   MENU_CURVE,
   MENU_DURATION_MS,
@@ -79,6 +80,7 @@ const OVERLAYS = {
   Turbo: 'turbo',
   Route: 'route',
   Preferences: 'preferences',
+  RenderedFiles: 'rendered-files',
 } as const
 
 export type Overlays = (typeof OVERLAYS)[keyof typeof OVERLAYS]
@@ -120,6 +122,7 @@ function DevToolsPopover({
   const isTurbopackInfoOpen = open === OVERLAYS.Turbo
   const isRouteInfoOpen = open === OVERLAYS.Route
   const isPreferencesOpen = open === OVERLAYS.Preferences
+  const isRenderedFilesOpen = open === OVERLAYS.RenderedFiles
 
   const { mounted: menuMounted, rendered: menuRendered } = useDelayedRender(
     isMenuOpen,
@@ -315,6 +318,14 @@ function DevToolsPopover({
         setScale={setScale}
       />
 
+      {/* Rendered Files */}
+      <RenderedFiles
+        isOpen={isRenderedFilesOpen}
+        close={openRootMenu}
+        triggerRef={triggerRef}
+        style={popover}
+      />
+
       {/* Dropdown Menu */}
       {menuMounted && (
         <div
@@ -380,7 +391,15 @@ function DevToolsPopover({
                 onClick={() => setOpen(OVERLAYS.Preferences)}
                 index={isTurbopack ? 2 : 3}
               />
+              <MenuItem
+                data-rendered-files
+                label="Rendered Files"
+                value={<ChevronRight />}
+                onClick={() => setOpen(OVERLAYS.RenderedFiles)}
+                index={isTurbopack ? 3 : 4}
+              />
             </div>
+            
           </Context.Provider>
         </div>
       )}
