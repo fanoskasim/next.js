@@ -653,9 +653,13 @@ export async function handleAction({
         )
       } catch (err) {
         if (err instanceof ActionNotInModuleMapError) {
+          // It's an action request even though we didn't recognize the action ID.
+          ctx.isAction = true
           console.error(err)
           return { type: 'not-found' }
         } else {
+          // We don't know what went wrong, so we can't know if `isAction` should be set to true.
+          // Default it to false just in case.
           throw err
         }
       }
@@ -666,6 +670,7 @@ export async function handleAction({
       }
 
       // an MPA action.
+      ctx.isAction = true
 
       // Only warn if it's a server action, otherwise skip for other post requests
       warnBadServerActionRequest()
@@ -717,6 +722,8 @@ export async function handleAction({
         )
       } catch (err) {
         if (err instanceof ActionNotInModuleMapError) {
+          // It's an action request even though we didn't recognize the action ID.
+          ctx.isAction = true
           console.error(err)
           return { type: 'not-found' }
         } else {
@@ -730,6 +737,7 @@ export async function handleAction({
       }
 
       // an MPA action.
+      ctx.isAction = true
 
       // Only warn if it's a server action, otherwise skip for other post requests
       warnBadServerActionRequest()
@@ -914,6 +922,10 @@ export async function handleAction({
         }
 
         // A fetch action (initiated by the client router).
+
+        // We don't know if we can handle this action request (e.g. it might have an unrecognized action ID),
+        // but it definitely is one.
+        ctx.isAction = true
 
         // Get the action function.
         const actionHandler = await getActionHandler(actionId)
