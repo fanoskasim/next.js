@@ -23,7 +23,7 @@ pub async fn is_export_used(
 
     let export_usage_info = export_usage_info.await?;
     let Some(exports) = export_usage_info.used_exports.get(&module) else {
-        return Ok(Vc::cell(false));
+        return Ok(Vc::cell(true));
     };
 
     for export in exports {
