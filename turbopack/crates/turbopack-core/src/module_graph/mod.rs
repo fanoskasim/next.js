@@ -246,6 +246,7 @@ impl SingleModuleGraph {
                         *modules.get(&module).unwrap(),
                         RefData {
                             chunking_type: COMMON_CHUNKING_TYPE,
+                            export: None,
                         },
                     )),
                     Some(SingleModuleGraphBuilderNode::ChunkableReference { .. }) => {
@@ -1375,8 +1376,10 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
                     // .await?;
 
                     refs.iter()
-                        .flat_map(|(ty, modules)| modules.iter().map(|m| (ty.clone(), *m)))
-                        .map(async |(ty, target)| {
+                        .flat_map(|(ty, export, modules)| {
+                            modules.iter().map(|m| (ty.clone(), export.clone(), *m))
+                        })
+                        .map(async |(ty, export, target)| {
                             let to = if ty == COMMON_CHUNKING_TYPE {
                                 if let Some(idx) = visited_modules.get(&target) {
                                     SingleModuleGraphBuilderNode::new_visited_module(target, *idx)
@@ -1387,7 +1390,10 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
                                 SingleModuleGraphBuilderNode::new_chunkable_ref(
                                     module,
                                     target,
-                                    RefData { chunking_type: ty },
+                                    RefData {
+                                        chunking_type: ty,
+                                        export,
+                                    },
                                 )
                                 .await?
                             };

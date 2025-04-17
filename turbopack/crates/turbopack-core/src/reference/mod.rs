@@ -12,7 +12,7 @@ use crate::{
     module::{Module, Modules},
     output::{OutputAsset, OutputAssets},
     raw_module::RawModule,
-    resolve::{ModuleResolveResult, RequestKey},
+    resolve::{Export, ModuleResolveResult, RequestKey},
 };
 pub mod source_map;
 
@@ -272,7 +272,7 @@ pub async fn primary_referenced_modules(module: Vc<Box<dyn Module>>) -> Result<V
 
 type ModulesVec = Vec<ResolvedVc<Box<dyn Module>>>;
 #[turbo_tasks::value(transparent)]
-pub struct ModulesWithChunkingType(Vec<(ChunkingType, ModulesVec)>);
+pub struct ModulesWithRefData(Vec<(ChunkingType, Option<Export>, ModulesVec)>);
 
 /// Aggregates all primary [Module]s referenced by an [Module] via [ChunkableModuleReference]s.
 /// This does not include transitively references [Module]s, only includes
@@ -282,7 +282,7 @@ pub struct ModulesWithChunkingType(Vec<(ChunkingType, ModulesVec)>);
 #[turbo_tasks::function]
 pub async fn primary_chunkable_referenced_modules(
     module: Vc<Box<dyn Module>>,
-) -> Result<Vc<ModulesWithChunkingType>> {
+) -> Result<Vc<ModulesWithRefData>> {
     let modules = module
         .references()
         .await?
@@ -292,14 +292,12 @@ pub async fn primary_chunkable_referenced_modules(
                 ResolvedVc::try_downcast::<Box<dyn ChunkableModuleReference>>(*reference)
             {
                 if let Some(chunking_type) = &*reference.chunking_type().await? {
-                    let resolved = reference
-                        .resolve_reference()
-                        .resolve()
-                        .await?
-                        .primary_modules()
-                        .owned()
-                        .await?;
-                    return Ok(Some((chunking_type.clone(), resolved)));
+                    let result = reference.resolve_reference().resolve().await?;
+                    let resolved = result.primary_modules().owned().await?;
+
+                    let export = result.await?.export.clone();
+
+                    return Ok(Some((chunking_type.clone(), export, resolved)));
                 }
             }
             Ok(None)
