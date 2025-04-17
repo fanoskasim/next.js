@@ -117,6 +117,7 @@ impl ModuleResolveResultItem {
 )]
 pub enum Export {
     Named(RcStr),
+    All,
 }
 
 #[turbo_tasks::value(shared)]

@@ -246,7 +246,7 @@ impl SingleModuleGraph {
                         *modules.get(&module).unwrap(),
                         RefData {
                             chunking_type: COMMON_CHUNKING_TYPE,
-                            export: None,
+                            export: Some(Export::All),
                         },
                     )),
                     Some(SingleModuleGraphBuilderNode::ChunkableReference { .. }) => {
