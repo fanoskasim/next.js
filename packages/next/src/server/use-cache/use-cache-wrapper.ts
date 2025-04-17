@@ -17,6 +17,7 @@ import { unstable_prerender as prerender } from 'react-server-dom-webpack/static
 import type { WorkStore } from '../app-render/work-async-storage.external'
 import { workAsyncStorage } from '../app-render/work-async-storage.external'
 import type {
+  CommonUseCacheStore,
   UseCacheStore,
   WorkUnitStore,
 } from '../app-render/work-unit-async-storage.external'
@@ -53,6 +54,10 @@ import {
 import type { Params } from '../request/params'
 import React from 'react'
 import { createLazyResult, isResolvedLazyResult } from '../lib/lazy-result'
+import {
+  createCookiesForUseCacheStore,
+  type UseCacheRenderContext,
+} from '../request/cookies'
 
 type CacheKeyParts =
   | [buildId: string, id: string, args: unknown[]]
@@ -66,9 +71,10 @@ export interface UseCachePageComponentProps {
 
 interface GenerateCacheEntryContext {
   readonly workStore: WorkStore
-  readonly outerWorkUnitStore: WorkUnitStore | undefined
+  readonly renderContext: UseCacheRenderContext
   readonly clientReferenceManifest: DeepReadonly<ClientReferenceManifestForRsc>
   readonly timeoutError: UseCacheTimeoutError
+  readonly kind: string
 }
 
 const isEdgeRuntime = process.env.NEXT_RUNTIME === 'edge'
@@ -81,7 +87,7 @@ function generateCacheEntry(
   fn: (...args: unknown[]) => Promise<unknown>,
   encodedCacheKeyParts: FormData | string,
   ctx: GenerateCacheEntryContext
-): Promise<[ReadableStream, Promise<CacheEntry>]> {
+) {
   // We need to run this inside a clean AsyncLocalStorage snapshot so that the cache
   // generation cannot read anything from the context we're currently executing which
   // might include request specific things like cookies() inside a React.cache().
@@ -121,7 +127,7 @@ function generateCacheEntryWithCacheContext(
   encodedCacheKeyParts: FormData | string,
   ctx: GenerateCacheEntryContext
 ) {
-  const { workStore, outerWorkUnitStore } = ctx
+  const { workStore, renderContext, kind } = ctx
 
   if (!workStore.cacheLifeProfiles) {
     throw new Error(
@@ -140,8 +146,11 @@ function generateCacheEntryWithCacheContext(
     )
   }
 
+  const { workUnitStore: outerWorkUnitStore } = renderContext
+
   const useCacheOrRequestStore =
     outerWorkUnitStore?.type === 'request' ||
+    // outerWorkUnitStore?.type === 'cache-with-cookies' ||
     outerWorkUnitStore?.type === 'cache'
       ? outerWorkUnitStore
       : undefined
@@ -150,6 +159,7 @@ function generateCacheEntryWithCacheContext(
   const cacheStore: UseCacheStore = {
     type: 'cache',
     phase: 'render',
+    kind,
     implicitTags: outerWorkUnitStore?.implicitTags,
     revalidate: defaultCacheLife.revalidate,
     expire: defaultCacheLife.expire,
@@ -166,7 +176,12 @@ function generateCacheEntryWithCacheContext(
     draftMode:
       outerWorkUnitStore &&
       getDraftModeProviderForCacheScope(workStore, outerWorkUnitStore),
+    cookies: createCookiesForUseCacheStore(workStore, renderContext),
   }
+
+  // const cacheStore: UseCacheStore | UseCacheWithCookiesStore = cookies
+  //   ? { ...commonCacheStore, type: 'cache-with-cookies', cookies }
+  //   : { ...commonCacheStore, type: 'cache' }
 
   return workUnitAsyncStorage.run(
     cacheStore,
@@ -214,7 +229,7 @@ async function collectResult(
   savedStream: ReadableStream,
   workStore: WorkStore,
   outerWorkUnitStore: WorkUnitStore | undefined,
-  innerCacheStore: UseCacheStore,
+  innerCacheStore: CommonUseCacheStore,
   startTime: number,
   errors: Array<unknown> // This is a live array that gets pushed into.
 ): Promise<CacheEntry> {
@@ -295,16 +310,16 @@ async function collectResult(
 }
 
 async function generateCacheEntryImpl(
-  innerCacheStore: UseCacheStore,
+  innerCacheStore: CommonUseCacheStore,
   fn: (...args: unknown[]) => Promise<unknown>,
   encodedCacheKeyParts: FormData | string,
   {
     workStore,
-    outerWorkUnitStore,
     clientReferenceManifest,
     timeoutError,
+    renderContext,
   }: GenerateCacheEntryContext
-): Promise<[ReadableStream, Promise<CacheEntry>]> {
+): Promise<[ReadableStream, Promise<CacheEntry>] | [null, Promise<never>]> {
   const temporaryReferences = createServerTemporaryReferenceSet()
 
   const [, , args] =
@@ -325,16 +340,19 @@ async function generateCacheEntryImpl(
               // case we don't want to reject with "Error: Connection closed.",
               // so we intentionally keep the iterable alive. This is similar to
               // the halting trick that we do while rendering.
-              if (outerWorkUnitStore?.type === 'prerender') {
+              if (renderContext.type === 'prerender') {
+                const abortSignal = AbortSignal.any([
+                  renderContext.dynamicAccessAbortController.signal,
+                  renderContext.workUnitStore.renderSignal,
+                ])
+
                 await new Promise<void>((resolve) => {
-                  if (outerWorkUnitStore.renderSignal.aborted) {
+                  if (abortSignal.aborted) {
                     resolve()
                   } else {
-                    outerWorkUnitStore.renderSignal.addEventListener(
-                      'abort',
-                      () => resolve(),
-                      { once: true }
-                    )
+                    abortSignal.addEventListener('abort', () => resolve(), {
+                      once: true,
+                    })
                   }
                 })
               }
@@ -378,7 +396,9 @@ async function generateCacheEntryImpl(
 
   let stream: ReadableStream<Uint8Array>
 
-  if (outerWorkUnitStore?.type === 'prerender') {
+  if (renderContext.type === 'prerender') {
+    const { dynamicAccessAbortController, workUnitStore } = renderContext
+    const { signal: dynamicAccessAbortSignal } = dynamicAccessAbortController
     const timeoutAbortController = new AbortController()
 
     // If we're prerendering, we give you 50 seconds to fill a cache entry.
@@ -389,7 +409,8 @@ async function generateCacheEntryImpl(
     }, 50000)
 
     const abortSignal = AbortSignal.any([
-      outerWorkUnitStore.renderSignal,
+      workUnitStore.renderSignal,
+      dynamicAccessAbortSignal,
       timeoutAbortController.signal,
     ])
 
@@ -412,6 +433,18 @@ async function generateCacheEntryImpl(
 
     clearTimeout(timer)
 
+    if (dynamicAccessAbortSignal.aborted) {
+      workUnitStore.cacheSignal?.endRead()
+
+      const hangingPromise = makeHangingPromise<never>(
+        workUnitStore.renderSignal,
+        dynamicAccessAbortSignal.reason.message
+      )
+
+      // TODO: A tuple is not the best way to return this.
+      return [null, hangingPromise]
+    }
+
     stream = prelude
   } else {
     stream = renderToReadableStream(
@@ -430,7 +463,7 @@ async function generateCacheEntryImpl(
   const promiseOfCacheEntry = collectResult(
     savedStream,
     workStore,
-    outerWorkUnitStore,
+    renderContext.workUnitStore,
     innerCacheStore,
     startTime,
     errors
@@ -520,6 +553,20 @@ function createTrackedReadableStream(
       }
     },
   })
+}
+
+function createRenderContext(
+  workUnitStore: WorkUnitStore | undefined
+): UseCacheRenderContext {
+  if (!workUnitStore || workUnitStore.type !== 'prerender') {
+    return { type: 'other', workUnitStore }
+  }
+
+  return {
+    type: 'prerender',
+    workUnitStore,
+    dynamicAccessAbortController: new AbortController(),
+  }
 }
 
 export function cache(
@@ -812,16 +859,25 @@ export function cache(
             }
           }
 
+          const renderContext = createRenderContext(workUnitStore)
+
           const [newStream, pendingCacheEntry] = await generateCacheEntry(
             fn,
             encodedCacheKeyParts,
             {
               workStore,
-              outerWorkUnitStore: workUnitStore,
+              renderContext,
               clientReferenceManifest,
               timeoutError,
+              kind,
             }
           )
+
+          if (newStream === null) {
+            // TODO: This is actually a hanging promise. Make this clearer by
+            // not returning a tuple from generateCacheEntry.
+            return pendingCacheEntry
+          }
 
           // When draft mode is enabled, we must not save the cache entry.
           if (!workStore.isDraftMode) {
@@ -884,35 +940,42 @@ export function cache(
               encodedCacheKeyParts,
               {
                 workStore,
-                outerWorkUnitStore: undefined, // This is not running within the context of this unit.
+                renderContext: {
+                  type: 'other',
+                  // This is not running within the context of this unit.
+                  workUnitStore: undefined,
+                },
                 clientReferenceManifest,
                 timeoutError,
+                kind,
               }
             )
 
-            let savedCacheEntry: Promise<CacheEntry>
-            if (prerenderResumeDataCache) {
-              const split = clonePendingCacheEntry(pendingCacheEntry)
-              savedCacheEntry = getNthCacheEntry(split, 0)
-              prerenderResumeDataCache.cache.set(
+            if (ignoredStream !== null) {
+              let savedCacheEntry: Promise<CacheEntry>
+              if (prerenderResumeDataCache) {
+                const split = clonePendingCacheEntry(pendingCacheEntry)
+                savedCacheEntry = getNthCacheEntry(split, 0)
+                prerenderResumeDataCache.cache.set(
+                  serializedCacheKey,
+                  getNthCacheEntry(split, 1)
+                )
+              } else {
+                savedCacheEntry = pendingCacheEntry
+              }
+
+              const promise = cacheHandler.set(
                 serializedCacheKey,
-                getNthCacheEntry(split, 1)
+                savedCacheEntry
               )
-            } else {
-              savedCacheEntry = pendingCacheEntry
+
+              if (!workStore.pendingRevalidateWrites) {
+                workStore.pendingRevalidateWrites = []
+              }
+              workStore.pendingRevalidateWrites.push(promise)
+
+              await ignoredStream.cancel()
             }
-
-            const promise = cacheHandler.set(
-              serializedCacheKey,
-              savedCacheEntry
-            )
-
-            if (!workStore.pendingRevalidateWrites) {
-              workStore.pendingRevalidateWrites = []
-            }
-            workStore.pendingRevalidateWrites.push(promise)
-
-            await ignoredStream.cancel()
           }
         }
       }
