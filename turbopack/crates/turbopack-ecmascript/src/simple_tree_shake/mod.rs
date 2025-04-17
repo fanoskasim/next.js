@@ -4,17 +4,23 @@ use anyhow::{Context, Result};
 use rustc_hash::FxHashMap;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Vc};
-use turbopack_core::{module_graph::SingleModuleGraph, resolve::Export};
+use turbopack_core::{
+    module_graph::{ModuleGraph, SingleModuleGraph},
+    resolve::Export,
+};
 
 use crate::chunk::EcmascriptChunkPlaceable;
 
 #[turbo_tasks::function]
 pub async fn is_export_used(
-    graph: ResolvedVc<SingleModuleGraph>,
+    graph: ResolvedVc<ModuleGraph>,
     module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
     export_name: RcStr,
 ) -> Result<Vc<bool>> {
-    let export_usage_info = compute_export_usage_info_single(*graph).await?;
+    let export_usage_info = compute_export_usage_info(graph)
+        .resolve_strongly_consistent()
+        .await?
+        .await?;
     let Some(exports) = export_usage_info.used_exports.get(&module) else {
         // Let's be safe.
         return Ok(Vc::cell(true));
@@ -36,10 +42,25 @@ pub async fn is_export_used(
     Ok(Vc::cell(false))
 }
 
+#[turbo_tasks::function(operation)]
+pub async fn compute_export_usage_info(
+    graph: ResolvedVc<ModuleGraph>,
+) -> Result<Vc<ExportUsageInfo>> {
+    // Layout segment optimization, we can individually compute the async modules for each graph.
+    let mut result: Vc<ExportUsageInfo> = ExportUsageInfo::default().cell();
+    for g in &graph.await?.graphs {
+        result = compute_export_usage_info_single(**g, result);
+    }
+    Ok(result)
+}
+
 #[turbo_tasks::function]
 pub async fn compute_export_usage_info_single(
     graph: ResolvedVc<SingleModuleGraph>,
+    parent_export_usage_info: ResolvedVc<ExportUsageInfo>,
 ) -> Result<Vc<ExportUsageInfo>> {
+    let parent_export_usage_info = parent_export_usage_info.await?;
+
     let graph = graph.await?;
     let mut used_exports = FxHashMap::default();
 
@@ -64,10 +85,18 @@ pub async fn compute_export_usage_info_single(
         })
         .context("failed to traverse module graph")?;
 
+    for (k, v) in &parent_export_usage_info.used_exports {
+        used_exports
+            .entry(*k)
+            .or_insert_with(Vec::new)
+            .extend(v.clone());
+    }
+
     Ok(ExportUsageInfo { used_exports }.cell())
 }
 
 #[turbo_tasks::value]
+#[derive(Default)]
 pub struct ExportUsageInfo {
     used_exports: FxHashMap<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>, Vec<Export>>,
 }
