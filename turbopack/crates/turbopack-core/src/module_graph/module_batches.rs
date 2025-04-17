@@ -297,7 +297,8 @@ impl PreBatches {
                 std::iter::once(ResolvedVc::upcast(entry)),
                 &mut state,
                 |parent_info, node, state| {
-                    let ty = parent_info.map_or(&ChunkingType::Parallel, |(_, ty)| ty);
+                    let ty =
+                        parent_info.map_or(&ChunkingType::Parallel, |(_, ty)| &ty.chunking_type);
                     let module = node.module;
                     if !ty.is_parallel() {
                         state.items.push(PreBatchItem::NonParallelEdge(
@@ -361,7 +362,7 @@ pub async fn compute_module_batches(
                     // Already a boundary module, can skip check
                     return Ok(());
                 };
-                if ty.is_parallel() {
+                if ty.chunking_type.is_parallel() {
                     let parent_chunk_groups = chunk_group_info
                         .module_chunk_groups
                         .get(&parent.module)
@@ -392,7 +393,7 @@ pub async fn compute_module_batches(
         // cycles that include boundary modules
         module_graph
             .traverse_cycles(
-                |ty| ty.is_parallel(),
+                |ref_data| ref_data.chunking_type.is_parallel(),
                 |cycle| {
                     if cycle
                         .iter()

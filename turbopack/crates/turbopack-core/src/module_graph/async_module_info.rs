@@ -79,7 +79,7 @@ async fn compute_async_module_info_single(
         &mut (),
         |_, _, _| Ok(GraphTraversalAction::Continue),
         |parent_info, module, _| {
-            let Some((parent_module, chunking_type)) = parent_info else {
+            let Some((parent_module, ref_data)) = parent_info else {
                 // An entry module
                 return;
             };
@@ -87,7 +87,7 @@ async fn compute_async_module_info_single(
             let parent_module = parent_module.module;
 
             // edges.push((parent_module, module, async_modules.contains(&module)));
-            match chunking_type {
+            match &ref_data.chunking_type {
                 ChunkingType::ParallelInheritAsync
                 | ChunkingType::Shared {
                     inherit_async: true,
@@ -112,7 +112,7 @@ async fn compute_async_module_info_single(
     )?;
 
     graph.traverse_cycles(
-        |ty| ty.is_inherit_async(),
+        |ref_data| ref_data.chunking_type.is_inherit_async(),
         |cycle| {
             if cycle
                 .iter()
