@@ -19,11 +19,11 @@ pub async fn is_export_used(
 ) -> Result<Vc<bool>> {
     let export_usage_info = compute_export_usage_info(graph)
         .resolve_strongly_consistent()
-        .await?
         .await?;
+
+    let export_usage_info = export_usage_info.await?;
     let Some(exports) = export_usage_info.used_exports.get(&module) else {
-        // Let's be safe.
-        return Ok(Vc::cell(true));
+        return Ok(Vc::cell(false));
     };
 
     for export in exports {
