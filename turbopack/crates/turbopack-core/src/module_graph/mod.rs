@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{Instrument, Span};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
+    debug::ValueDebugFormat,
     graph::{AdjacencyMap, GraphTraversal, Visit, VisitControlFlow},
     trace::TraceRawVcs,
     CollectiblesSource, FxIndexMap, NonLocalValue, ReadRef, ResolvedVc, TryJoinIterExt,
@@ -31,6 +32,7 @@ use crate::{
         traced_di_graph::{iter_neighbors_rev, TracedDiGraph},
     },
     reference::primary_chunkable_referenced_modules,
+    resolve::Export,
 };
 
 pub mod async_module_info;
@@ -162,7 +164,7 @@ impl GraphEntries {
 #[turbo_tasks::value(cell = "new", eq = "manual", into = "new")]
 #[derive(Clone, Default)]
 pub struct SingleModuleGraph {
-    graph: TracedDiGraph<SingleModuleGraphNode, ChunkingType>,
+    graph: TracedDiGraph<SingleModuleGraphNode, RefData>,
 
     /// The number of modules in the graph (excluding VisitedModule nodes)
     pub number_of_modules: usize,
@@ -178,6 +180,24 @@ pub struct SingleModuleGraph {
 
     #[turbo_tasks(trace_ignore)]
     pub entries: GraphEntriesT,
+}
+
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Hash,
+    TraceRawVcs,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    ValueDebugFormat,
+    NonLocalValue,
+)]
+pub struct RefData {
+    pub chunking_type: ChunkingType,
+    pub export: Option<Export>,
 }
 
 impl SingleModuleGraph {

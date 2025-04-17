@@ -12,8 +12,8 @@ use serde::{Deserialize, Serialize};
 use tracing::{Instrument, Level};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
-    trace::TraceRawVcs, FxIndexMap, FxIndexSet, NonLocalValue, ReadRef, ResolvedVc, SliceMap,
-    TaskInput, TryJoinIterExt, Value, ValueToString, Vc,
+    debug::ValueDebugFormat, trace::TraceRawVcs, FxIndexMap, FxIndexSet, NonLocalValue, ReadRef,
+    ResolvedVc, SliceMap, TaskInput, TryJoinIterExt, Value, ValueToString, Vc,
 };
 use turbo_tasks_fs::{
     util::normalize_request, FileSystemEntryType, FileSystemPath, RealPathResult,
@@ -103,8 +103,18 @@ impl ModuleResolveResultItem {
     }
 }
 
-#[turbo_tasks::value(shared)]
-#[derive(Clone)]
+#[derive(
+    Debug,
+    Clone,
+    Hash,
+    TraceRawVcs,
+    Serialize,
+    Deserialize,
+    Eq,
+    PartialEq,
+    ValueDebugFormat,
+    NonLocalValue,
+)]
 pub enum Export {
     Named(RcStr),
 }
