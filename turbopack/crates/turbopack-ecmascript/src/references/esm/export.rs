@@ -18,7 +18,7 @@ use turbo_tasks::{
 };
 use turbo_tasks_fs::glob::Glob;
 use turbopack_core::{
-    chunk::ChunkingContext,
+    chunk::{ChunkingContext, MinifyType},
     ident::AssetIdent,
     issue::{analyze::AnalyzeIssue, IssueExt, IssueSeverity, StyledString},
     module::Module,
@@ -521,9 +521,15 @@ impl EsmExports {
 
         let mut props = Vec::new();
         for (exported, local) in &expanded.exports {
-            let is_export_used = is_export_used(module_graph, *module, exported.clone()).await?;
-            if !*is_export_used {
-                continue;
+            if matches!(
+                *chunking_context.minify_type().await?,
+                MinifyType::Minify { .. }
+            ) {
+                let is_export_used =
+                    is_export_used(module_graph, *module, exported.clone()).await?;
+                if !*is_export_used {
+                    continue;
+                }
             }
 
             let expr = match local {
