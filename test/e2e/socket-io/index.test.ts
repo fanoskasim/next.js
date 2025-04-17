@@ -15,8 +15,8 @@ describe('socket-io', () => {
   it('should support socket.io without falling back to polling', async () => {
     let requestsCount = 0
 
-    const browser1 = await next.browser(next.url, '/')
-    const browser2 = await next.browser(next.url, '/', {
+    const browser1 = await next.browser('/')
+    const browser2 = await next.browser('/', {
       beforePageLoad(page) {
         page.on('request', () => {
           requestsCount++
@@ -30,6 +30,7 @@ describe('socket-io', () => {
     await input1.fill('hello world')
     await check(() => input2.inputValue(), /hello world/)
 
+    expect(requestsCount).toBeGreaterThan(0)
     const currentRequestsCount = requestsCount
 
     await input1.fill('123456')
