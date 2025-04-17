@@ -30,9 +30,7 @@ __turbopack_context__.v("/static/ignore-worker.c7cb9893.cjs");}}),
 
 var { g: global, __dirname } = __turbopack_context__;
 {
-__turbopack_context__.s({
-    "foo": (()=>foo)
-});
+__turbopack_context__.s({});
 const __TURBOPACK__import$2e$meta__ = {
     get url () {
         return `file://${__turbopack_context__.P("turbopack/crates/turbopack-tests/tests/snapshot/imports/ignore-comments/input/index.js")}`;

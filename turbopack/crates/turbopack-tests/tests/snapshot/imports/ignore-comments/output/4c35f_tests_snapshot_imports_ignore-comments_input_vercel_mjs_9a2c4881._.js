@@ -5,9 +5,7 @@
 
 var { g: global, __dirname } = __turbopack_context__;
 {
-__turbopack_context__.s({
-    "default": (()=>__TURBOPACK__default__export__)
-});
+__turbopack_context__.s({});
 const __TURBOPACK__default__export__ = "turbopack";
 }}),
 }]);
