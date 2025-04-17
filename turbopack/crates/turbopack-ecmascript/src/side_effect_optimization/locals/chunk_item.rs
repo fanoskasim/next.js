@@ -55,6 +55,7 @@ impl EcmascriptChunkItem for EcmascriptModuleLocalsChunkItem {
             .await?;
 
         let content = EcmascriptModuleContent::new(EcmascriptModuleContentOptions {
+            module: ResolvedVc::upcast(self.module),
             parsed,
             ident: self.module.ident().to_resolved().await?,
             specified_module_type: module_type_result.module_type,

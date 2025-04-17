@@ -33,6 +33,7 @@ use crate::{
     magic_identifier,
     parse::ParseResult,
     runtime_functions::{TURBOPACK_DYNAMIC, TURBOPACK_ESM},
+    simple_tree_shake::is_export_used,
 };
 
 #[derive(Clone, Hash, Debug, PartialEq, Eq, Serialize, Deserialize, TraceRawVcs, NonLocalValue)]
@@ -493,8 +494,9 @@ impl EsmExports {
 impl EsmExports {
     pub async fn code_generation(
         self: Vc<Self>,
-        _module_graph: Vc<ModuleGraph>,
+        module_graph: Vc<ModuleGraph>,
         chunking_context: Vc<Box<dyn ChunkingContext>>,
+        module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
         parsed: Option<Vc<ParseResult>>,
     ) -> Result<CodeGeneration> {
         let expanded = self.expand_exports().await?;
@@ -519,6 +521,11 @@ impl EsmExports {
 
         let mut props = Vec::new();
         for (exported, local) in &expanded.exports {
+            let is_export_used = is_export_used(module_graph, *module, exported.clone()).await?;
+            if !*is_export_used {
+                continue;
+            }
+
             let expr = match local {
                 EsmExport::Error => Some(quote!(
                     "(() => { throw new Error(\"Failed binding. See build errors!\"); })" as Expr,

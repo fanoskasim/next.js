@@ -418,6 +418,7 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
         chunking_context: ResolvedVc<Box<dyn ChunkingContext>>,
         async_module_info: Option<ResolvedVc<AsyncModuleInfo>>,
     ) -> Result<Vc<EcmascriptModuleContent>> {
+        let self_resolved = self.to_resolved().await?;
         let parsed = self.parse().to_resolved().await?;
 
         let analyze = self.analyze();
@@ -430,6 +431,7 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
 
         Ok(EcmascriptModuleContent::new(
             EcmascriptModuleContentOptions {
+                module: ResolvedVc::upcast(self_resolved),
                 parsed,
                 ident: self.ident().to_resolved().await?,
                 specified_module_type: module_type_result.module_type,
@@ -786,6 +788,7 @@ pub struct EcmascriptModuleContent {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, TaskInput, TraceRawVcs)]
 pub struct EcmascriptModuleContentOptions {
+    module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
     parsed: ResolvedVc<ParseResult>,
     ident: ResolvedVc<AssetIdent>,
     specified_module_type: SpecifiedModuleType,
@@ -807,6 +810,7 @@ impl EcmascriptModuleContent {
     #[turbo_tasks::function]
     pub async fn new(input: EcmascriptModuleContentOptions) -> Result<Vc<Self>> {
         let EcmascriptModuleContentOptions {
+            module,
             parsed,
             ident,
             specified_module_type,
@@ -840,7 +844,12 @@ impl EcmascriptModuleContent {
                 if let EcmascriptExports::EsmExports(exports) = *exports.await? {
                     Some(
                         exports
-                            .code_generation(*module_graph, *chunking_context, Some(*parsed))
+                            .code_generation(
+                                *module_graph,
+                                *chunking_context,
+                                module,
+                                Some(*parsed),
+                            )
                             .await?,
                     )
                 } else {
