@@ -105,9 +105,16 @@ impl ModuleResolveResultItem {
 
 #[turbo_tasks::value(shared)]
 #[derive(Clone)]
+pub enum Export {
+    Named(RcStr),
+}
+
+#[turbo_tasks::value(shared)]
+#[derive(Clone)]
 pub struct ModuleResolveResult {
     pub primary: SliceMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
+    pub export: Option<Export>,
 }
 
 impl ModuleResolveResult {
@@ -115,6 +122,7 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -125,6 +133,7 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -141,6 +150,7 @@ impl ModuleResolveResult {
             primary: vec![(request_key, ModuleResolveResultItem::Module(module))]
                 .into_boxed_slice(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -156,6 +166,7 @@ impl ModuleResolveResult {
             )]
             .into_boxed_slice(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -169,6 +180,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -183,6 +195,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -211,6 +224,7 @@ impl ModuleResolveResult {
 pub struct ModuleResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
+    pub export: Option<Export>,
 }
 
 impl From<ModuleResolveResultBuilder> for ModuleResolveResult {
@@ -218,6 +232,7 @@ impl From<ModuleResolveResultBuilder> for ModuleResolveResult {
         ModuleResolveResult {
             primary: v.primary.into_iter().collect(),
             affecting_sources: v.affecting_sources.into_boxed_slice(),
+            export: v.export,
         }
     }
 }
@@ -226,6 +241,7 @@ impl From<ModuleResolveResult> for ModuleResolveResultBuilder {
         ModuleResolveResultBuilder {
             primary: IntoIterator::into_iter(v.primary).collect(),
             affecting_sources: v.affecting_sources.into_vec(),
+            export: v.export,
         }
     }
 }
@@ -266,6 +282,7 @@ impl ModuleResolveResult {
                 .copied()
                 .chain(std::iter::once(source))
                 .collect(),
+            export: self.export.clone(),
         }
         .cell())
     }
@@ -283,6 +300,7 @@ impl ModuleResolveResult {
                 .copied()
                 .chain(sources)
                 .collect(),
+            export: self.export.clone(),
         }
         .cell())
     }
@@ -302,6 +320,7 @@ impl ModuleResolveResult {
                 return Ok(Self {
                     primary: result_ref.primary.clone(),
                     affecting_sources: affecting_sources.into_boxed_slice(),
+                    export: result_ref.export.clone(),
                 }
                 .cell());
             }
@@ -524,6 +543,7 @@ impl RequestKey {
 pub struct ResolveResult {
     pub primary: SliceMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
+    pub export: Option<Export>,
 }
 
 #[turbo_tasks::value_impl]
@@ -586,6 +606,7 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -596,6 +617,7 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -611,6 +633,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -623,6 +646,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -638,6 +662,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: Default::default(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -650,6 +675,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
+            export: None,
         }
         .resolved_cell()
     }
@@ -699,6 +725,7 @@ impl ResolveResult {
                 .try_join()
                 .await?
                 .into_boxed_slice(),
+            export: self.export.clone(),
         })
     }
 
@@ -746,6 +773,7 @@ impl ResolveResult {
                 .into_iter()
                 .collect(),
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         })
     }
 
@@ -769,6 +797,7 @@ impl ResolveResult {
                 .into_iter()
                 .collect(),
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         })
     }
 
@@ -791,6 +820,7 @@ impl ResolveResult {
         ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         }
     }
 
@@ -813,6 +843,7 @@ impl ResolveResult {
 pub struct ResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
+    pub export: Option<Export>,
 }
 
 impl From<ResolveResultBuilder> for ResolveResult {
@@ -820,6 +851,7 @@ impl From<ResolveResultBuilder> for ResolveResult {
         ResolveResult {
             primary: v.primary.into_iter().collect(),
             affecting_sources: v.affecting_sources.into_boxed_slice(),
+            export: v.export,
         }
     }
 }
@@ -828,6 +860,7 @@ impl From<ResolveResult> for ResolveResultBuilder {
         ResolveResultBuilder {
             primary: IntoIterator::into_iter(v.primary).collect(),
             affecting_sources: v.affecting_sources.into_vec(),
+            export: v.export,
         }
     }
 }
@@ -880,6 +913,7 @@ impl ResolveResult {
                 .copied()
                 .chain(std::iter::once(source))
                 .collect(),
+            export: self.export.clone(),
         }
         .cell())
     }
@@ -897,6 +931,7 @@ impl ResolveResult {
                 .copied()
                 .chain(sources)
                 .collect(),
+            export: self.export.clone(),
         }
         .cell())
     }
@@ -916,6 +951,7 @@ impl ResolveResult {
                 return Ok(Self {
                     primary: result_ref.primary.clone(),
                     affecting_sources: affecting_sources.into_boxed_slice(),
+                    export: result_ref.export.clone(),
                 }
                 .cell());
             }
@@ -1039,6 +1075,7 @@ impl ResolveResult {
         Ok(ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         }
         .into())
     }
@@ -1076,6 +1113,7 @@ impl ResolveResult {
         Ok(ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         }
         .into())
     }
@@ -1100,6 +1138,7 @@ impl ResolveResult {
         ResolveResult {
             primary: new_primary,
             affecting_sources: self.affecting_sources.clone(),
+            export: self.export.clone(),
         }
         .into()
     }
@@ -1748,6 +1787,7 @@ async fn handle_after_resolve_plugins(
     Ok(ResolveResult {
         primary: new_primary.into_iter().collect(),
         affecting_sources: affecting_sources.into_boxed_slice(),
+        export: result_value.export.clone(),
     }
     .cell())
 }
