@@ -13,7 +13,7 @@ use turbopack_core::{
     resolve::{
         parse::Request,
         plugin::{BeforeResolvePlugin, BeforeResolvePluginCondition},
-        ResolveResult, ResolveResultItem, ResolveResultOption,
+        Export, ResolveResult, ResolveResultItem, ResolveResultOption,
     },
     virtual_source::VirtualSource,
 };
@@ -127,6 +127,7 @@ impl BeforeResolvePlugin for NextFontLocalResolvePlugin {
                                     format!("Font file not found: Can't resolve {}'", font_path)
                                         .into(),
                                 )),
+                                Export::All,
                             )));
                         }
                     }
@@ -181,6 +182,7 @@ impl BeforeResolvePlugin for NextFontLocalResolvePlugin {
 
                 Ok(ResolveResultOption::some(*ResolveResult::source(
                     ResolvedVc::upcast(js_asset),
+                    Export::All,
                 )))
             }
             "@vercel/turbopack-next/internal/font/local/cssmodule.module.css" => {
@@ -212,6 +214,7 @@ impl BeforeResolvePlugin for NextFontLocalResolvePlugin {
 
                 Ok(ResolveResultOption::some(*ResolveResult::source(
                     ResolvedVc::upcast(css_asset),
+                    Export::All,
                 )))
             }
             "@vercel/turbopack-next/internal/font/local/font" => {
@@ -244,6 +247,7 @@ impl BeforeResolvePlugin for NextFontLocalResolvePlugin {
 
                 Ok(ResolveResultOption::some(*ResolveResult::source(
                     ResolvedVc::upcast(font_source),
+                    Export::All,
                 )))
             }
             _ => Ok(ResolveResultOption::none()),

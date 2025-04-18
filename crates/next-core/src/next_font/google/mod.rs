@@ -25,7 +25,7 @@ use turbopack_core::{
         options::{ImportMapResult, ImportMappingReplacement, ReplacedImportMapping},
         parse::Request,
         pattern::Pattern,
-        ResolveResult,
+        Export, ResolveResult,
     },
     virtual_source::VirtualSource,
 };
@@ -136,7 +136,11 @@ impl NextFontGoogleReplacer {
             )
             .cell()),
         ).to_resolved().await?;
-        Ok(ImportMapResult::Result(ResolveResult::source(ResolvedVc::upcast(js_asset))).cell())
+        Ok(ImportMapResult::Result(ResolveResult::source(
+            ResolvedVc::upcast(js_asset),
+            Export::All,
+        ))
+        .cell())
     }
 }
 
@@ -265,7 +269,11 @@ impl NextFontGoogleCssModuleReplacer {
         .to_resolved()
         .await?;
 
-        Ok(ImportMapResult::Result(ResolveResult::source(ResolvedVc::upcast(css_asset))).cell())
+        Ok(ImportMapResult::Result(ResolveResult::source(
+            ResolvedVc::upcast(css_asset),
+            Export::All,
+        ))
+        .cell())
     }
 }
 
@@ -384,7 +392,11 @@ impl ImportMappingReplacement for NextFontGoogleFontFileReplacer {
         .to_resolved()
         .await?;
 
-        Ok(ImportMapResult::Result(ResolveResult::source(ResolvedVc::upcast(font_source))).cell())
+        Ok(ImportMapResult::Result(ResolveResult::source(
+            ResolvedVc::upcast(font_source),
+            Export::All,
+        ))
+        .cell())
     }
 }
 
