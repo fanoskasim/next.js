@@ -105,6 +105,7 @@ impl ModuleResolveResultItem {
 
 #[derive(
     Debug,
+    Default,
     Clone,
     Hash,
     TraceRawVcs,
@@ -114,9 +115,12 @@ impl ModuleResolveResultItem {
     PartialEq,
     ValueDebugFormat,
     NonLocalValue,
+    TaskInput,
 )]
 pub enum Export {
     Named(RcStr),
+    /// This means the whole content of the module is used.
+    #[default]
     All,
 }
 
@@ -125,7 +129,7 @@ pub enum Export {
 pub struct ModuleResolveResult {
     pub primary: SliceMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
-    pub export: Option<Export>,
+    pub export: Export,
 }
 
 impl ModuleResolveResult {
@@ -133,7 +137,7 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -144,24 +148,25 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
 
-    pub fn module(module: ResolvedVc<Box<dyn Module>>) -> ResolvedVc<Self> {
-        Self::module_with_key(RequestKey::default(), module)
+    pub fn module(module: ResolvedVc<Box<dyn Module>>, export: Export) -> ResolvedVc<Self> {
+        Self::module_with_key(RequestKey::default(), module, export)
     }
 
     pub fn module_with_key(
         request_key: RequestKey,
         module: ResolvedVc<Box<dyn Module>>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: vec![(request_key, ModuleResolveResultItem::Module(module))]
                 .into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: None,
+            export,
         }
         .resolved_cell()
     }
@@ -177,7 +182,7 @@ impl ModuleResolveResult {
             )]
             .into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -191,7 +196,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -206,7 +211,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -235,7 +240,7 @@ impl ModuleResolveResult {
 pub struct ModuleResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-    pub export: Option<Export>,
+    pub export: Export,
 }
 
 impl From<ModuleResolveResultBuilder> for ModuleResolveResult {
@@ -554,7 +559,7 @@ impl RequestKey {
 pub struct ResolveResult {
     pub primary: SliceMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
-    pub export: Option<Export>,
+    pub export: Export,
 }
 
 #[turbo_tasks::value_impl]
@@ -617,7 +622,7 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -628,7 +633,7 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -644,7 +649,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -657,7 +662,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -673,7 +678,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -686,7 +691,7 @@ impl ResolveResult {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: None,
+            export: Export::All,
         }
         .resolved_cell()
     }
@@ -854,7 +859,7 @@ impl ResolveResult {
 pub struct ResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-    pub export: Option<Export>,
+    pub export: Export,
 }
 
 impl From<ResolveResultBuilder> for ResolveResult {

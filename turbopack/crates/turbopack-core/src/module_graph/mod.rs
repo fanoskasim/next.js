@@ -197,7 +197,7 @@ pub struct SingleModuleGraph {
 )]
 pub struct RefData {
     pub chunking_type: ChunkingType,
-    pub export: Option<Export>,
+    pub export: Export,
 }
 
 impl SingleModuleGraph {
@@ -213,7 +213,7 @@ impl SingleModuleGraph {
             .flat_map(|e| e.entries())
             .map(|e| async move {
                 Ok(SingleModuleGraphBuilderEdge {
-                    to: SingleModuleGraphBuilderNode::new_module(e).await?,
+                    to: SingleModuleGraphBuilderNode::new_module(e, Export::All).await?,
                 })
             })
             .try_join()
@@ -242,11 +242,11 @@ impl SingleModuleGraph {
             let _span = tracing::info_span!("build module graph").entered();
             for (parent, current) in children_nodes_iter.into_breadth_first_edges() {
                 let parent_edge = match parent {
-                    Some(SingleModuleGraphBuilderNode::Module { module, .. }) => Some((
+                    Some(SingleModuleGraphBuilderNode::Module { module, export, .. }) => Some((
                         *modules.get(&module).unwrap(),
                         RefData {
                             chunking_type: COMMON_CHUNKING_TYPE,
-                            export: Some(Export::All),
+                            export,
                         },
                     )),
                     Some(SingleModuleGraphBuilderNode::ChunkableReference { .. }) => {
@@ -265,6 +265,7 @@ impl SingleModuleGraph {
                         module,
                         layer,
                         ident: _,
+                        export: _,
                     } => {
                         // Find the current node, if it was already added
                         let current_idx = if let Some(current_idx) = modules.get(&module) {
@@ -1269,6 +1270,7 @@ enum SingleModuleGraphBuilderNode {
         module: ResolvedVc<Box<dyn Module>>,
         layer: Option<ReadRef<RcStr>>,
         ident: ReadRef<RcStr>,
+        export: Export,
     },
     /// A reference to a module that is already listed in visited_modules
     VisitedModule {
@@ -1281,7 +1283,7 @@ enum SingleModuleGraphBuilderNode {
 }
 
 impl SingleModuleGraphBuilderNode {
-    async fn new_module(module: ResolvedVc<Box<dyn Module>>) -> Result<Self> {
+    async fn new_module(module: ResolvedVc<Box<dyn Module>>, export: Export) -> Result<Self> {
         let ident = module.ident();
         Ok(Self::Module {
             module,
@@ -1290,6 +1292,7 @@ impl SingleModuleGraphBuilderNode {
                 None => None,
             },
             ident: ident.to_string().await?,
+            export,
         })
     }
     async fn new_chunkable_ref(
@@ -1384,7 +1387,7 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
                                 if let Some(idx) = visited_modules.get(&target) {
                                     SingleModuleGraphBuilderNode::new_visited_module(target, *idx)
                                 } else {
-                                    SingleModuleGraphBuilderNode::new_module(target).await?
+                                    SingleModuleGraphBuilderNode::new_module(target, export).await?
                                 }
                             } else {
                                 SingleModuleGraphBuilderNode::new_chunkable_ref(
@@ -1410,7 +1413,11 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
                                 *idx,
                             )
                         } else {
-                            SingleModuleGraphBuilderNode::new_module(chunkable_ref_target).await?
+                            SingleModuleGraphBuilderNode::new_module(
+                                chunkable_ref_target,
+                                Export::All,
+                            )
+                            .await?
                         },
                     }]
                 }
