@@ -19,7 +19,7 @@ use turbopack_core::{
     module_graph::ModuleGraph,
     reference::{ModuleReference, ModuleReferences},
     reference_type::ReferenceType,
-    resolve::ModuleResolveResult,
+    resolve::{Export, ModuleResolveResult},
     virtual_source::VirtualSource,
 };
 use turbopack_ecmascript::{
@@ -386,7 +386,7 @@ impl ChunkableModuleReference for EcmascriptClientReference {
 impl ModuleReference for EcmascriptClientReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.module)
+        *ModuleResolveResult::module(self.module, Export::All)
     }
 }
 

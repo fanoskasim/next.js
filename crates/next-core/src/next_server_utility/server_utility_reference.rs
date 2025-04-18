@@ -6,7 +6,7 @@ use turbopack_core::{
     chunk::{ChunkableModuleReference, ChunkingType, ChunkingTypeOption},
     module::Module,
     reference::ModuleReference,
-    resolve::ModuleResolveResult,
+    resolve::{Export, ModuleResolveResult},
 };
 
 #[turbo_tasks::value]
@@ -40,7 +40,7 @@ impl ValueToString for NextServerUtilityModuleReference {
 impl ModuleReference for NextServerUtilityModuleReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.asset)
+        *ModuleResolveResult::module(self.asset, Export::All)
     }
 }
 

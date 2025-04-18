@@ -11,6 +11,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReferences, SingleChunkableModuleReference},
+    resolve::Export,
 };
 use turbopack_ecmascript::{
     chunk::{
@@ -60,6 +61,7 @@ impl Module for NextDynamicEntryModule {
             SingleChunkableModuleReference::new(
                 Vc::upcast(*self.module),
                 dynamic_ref_description(),
+                Export::All,
             )
             .to_resolved()
             .await?,
@@ -102,6 +104,7 @@ impl EcmascriptChunkPlaceable for NextDynamicEntryModule {
             SingleChunkableModuleReference::new(
                 Vc::upcast(*self.module),
                 dynamic_ref_description(),
+                Export::All,
             )
             .to_resolved()
             .await?,

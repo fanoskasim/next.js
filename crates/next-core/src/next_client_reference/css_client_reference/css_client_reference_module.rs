@@ -8,7 +8,7 @@ use turbopack_core::{
     ident::AssetIdent,
     module::Module,
     reference::{ModuleReference, ModuleReferences},
-    resolve::ModuleResolveResult,
+    resolve::{Export, ModuleResolveResult},
 };
 
 /// A [`CssClientReferenceModule`] is a marker module used to indicate which
@@ -94,7 +94,7 @@ impl ChunkableModuleReference for CssClientReference {
 impl ModuleReference for CssClientReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.module)
+        *ModuleResolveResult::module(self.module, Export::All)
     }
 }
 
