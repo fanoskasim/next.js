@@ -773,7 +773,7 @@ pub(crate) async fn analyse_ecmascript_module_internal(
                     Some(TreeShakingMode::Intermediate) => match &r.imported_symbol {
                         ImportedSymbol::ModuleEvaluation => {
                             should_add_evaluation = true;
-                            None
+                            Some(ModulePart::evaluation())
                         }
                         ImportedSymbol::Symbol(name) => Some(ModulePart::export((&**name).into())),
                         ImportedSymbol::PartEvaluation(_) | ImportedSymbol::Part(_) => {
