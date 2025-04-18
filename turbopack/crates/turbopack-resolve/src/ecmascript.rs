@@ -65,7 +65,7 @@ async fn apply_esm_specific_options_internal(
 
     if matches!(
         reference_type,
-        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(_))
+        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportWithType(_))
     ) {
         options.extensions.clear();
     }
