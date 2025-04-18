@@ -147,6 +147,7 @@ impl ModuleOptions {
             execution_context,
             tree_shaking_mode,
             keep_last_successful_parse,
+            enable_intermediate_tree_shaking,
             ..
         } = *module_options_context.await?;
 
@@ -177,6 +178,7 @@ impl ModuleOptions {
             refresh,
             extract_source_map: matches!(ecmascript_source_maps, SourceMapsType::Full),
             keep_last_successful_parse,
+            enable_intermediate_tree_shaking,
             ..Default::default()
         };
         let ecmascript_options_vc = ecmascript_options.resolved_cell();
