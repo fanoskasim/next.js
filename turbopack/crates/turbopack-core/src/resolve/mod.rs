@@ -122,6 +122,8 @@ pub enum Export {
     /// This means the whole content of the module is used.
     #[default]
     All,
+    /// Only side effects are used.
+    Evaluation,
 }
 
 #[turbo_tasks::value(shared)]

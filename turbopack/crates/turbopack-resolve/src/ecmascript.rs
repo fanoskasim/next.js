@@ -72,9 +72,13 @@ async fn apply_esm_specific_options_internal(
 
     options.parse_data_uris = true;
     options.export = match reference_type {
-        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(
-            ModulePart::Export(name),
-        )) => Export::Named(name.clone()),
+        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(part)) => {
+            match part {
+                ModulePart::Export(name) => Export::Named(name.clone()),
+                ModulePart::Evaluation => Export::Evaluation,
+                _ => Export::All,
+            }
+        }
         _ => Export::All,
     };
 

@@ -37,6 +37,7 @@ pub async fn is_export_used(
                     return Ok(Vc::cell(true));
                 }
             }
+            Export::Evaluation => {}
             Export::All => {
                 return Ok(Vc::cell(true));
             }

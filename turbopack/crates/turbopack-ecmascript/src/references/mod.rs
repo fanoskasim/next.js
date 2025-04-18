@@ -784,7 +784,7 @@ pub(crate) async fn analyse_ecmascript_module_internal(
                                 r.module_path
                             );
                         }
-                        ImportedSymbol::Exports => None,
+                        ImportedSymbol::Exports => Some(ModulePart::exports()),
                     },
                     Some(TreeShakingMode::ReexportsOnly) => match &r.imported_symbol {
                         ImportedSymbol::ModuleEvaluation => {
