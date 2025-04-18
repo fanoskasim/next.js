@@ -19,7 +19,7 @@ use super::{
 use crate::{
     chunk::EcmascriptChunkPlaceable, code_gen::CodeGeneration,
     references::esm::base::ReferencedAsset, runtime_functions::TURBOPACK_IMPORT,
-    utils::module_id_to_lit,
+    utils::module_id_to_lit, EcmascriptOptions,
 };
 
 /// A reference to the [EcmascriptModuleLocalsModule] variant of an original
@@ -28,6 +28,7 @@ use crate::{
 pub struct EcmascriptModulePartReference {
     pub module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
     pub part: Option<ModulePart>,
+    pub options: ResolvedVc<EcmascriptOptions>,
 }
 
 #[turbo_tasks::value_impl]
@@ -36,17 +37,27 @@ impl EcmascriptModulePartReference {
     pub fn new_part(
         module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
         part: ModulePart,
+        options: ResolvedVc<EcmascriptOptions>,
     ) -> Vc<Self> {
         EcmascriptModulePartReference {
             module,
             part: Some(part),
+            options,
         }
         .cell()
     }
 
     #[turbo_tasks::function]
-    pub fn new(module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>) -> Vc<Self> {
-        EcmascriptModulePartReference { module, part: None }.cell()
+    pub fn new(
+        module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
+        options: ResolvedVc<EcmascriptOptions>,
+    ) -> Vc<Self> {
+        EcmascriptModulePartReference {
+            module,
+            part: None,
+            options,
+        }
+        .cell()
     }
 }
 
@@ -81,7 +92,7 @@ impl ModuleReference for EcmascriptModulePartReference {
                 | ModulePart::Facade
                 | ModulePart::RenamedExport { .. }
                 | ModulePart::RenamedNamespace { .. } => Vc::upcast(
-                    EcmascriptModuleFacadeModule::new(*self.module, part.clone()),
+                    EcmascriptModuleFacadeModule::new(*self.module, part.clone(), *self.options),
                 ),
                 ModulePart::Export(..) | ModulePart::Internal(..) => {
                     bail!(

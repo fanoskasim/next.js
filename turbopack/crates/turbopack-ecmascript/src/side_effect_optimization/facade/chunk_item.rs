@@ -85,6 +85,7 @@ impl EcmascriptChunkItem for EcmascriptModuleFacadeChunkItem {
                     *chunking_context,
                     ResolvedVc::upcast(self.module),
                     None,
+                    self.module.options().await?.tree_shaking_mode,
                 )
                 .await?,
         ];
