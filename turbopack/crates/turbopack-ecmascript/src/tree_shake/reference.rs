@@ -4,7 +4,7 @@ use turbo_tasks::{ResolvedVc, ValueToString, Vc};
 use turbopack_core::{
     chunk::{ChunkableModuleReference, ChunkingType, ChunkingTypeOption},
     reference::ModuleReference,
-    resolve::{ModulePart, ModuleResolveResult},
+    resolve::{Export, ModulePart, ModuleResolveResult},
 };
 
 use crate::{tree_shake::asset::EcmascriptModulePartAsset, EcmascriptModuleAsset};
@@ -42,7 +42,15 @@ impl ModuleReference for EcmascriptModulePartReference {
                 .to_resolved()
                 .await?;
 
-        Ok(*ModuleResolveResult::module(ResolvedVc::upcast(module)))
+        let export = match &self.part {
+            ModulePart::Export(export) => Export::Named(export.clone()),
+            _ => Export::All,
+        };
+
+        Ok(*ModuleResolveResult::module(
+            ResolvedVc::upcast(module),
+            export,
+        ))
     }
 }
 

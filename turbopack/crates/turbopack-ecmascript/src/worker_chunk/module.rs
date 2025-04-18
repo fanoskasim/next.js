@@ -11,7 +11,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReference, ModuleReferences},
-    resolve::ModuleResolveResult,
+    resolve::{Export, ModuleResolveResult},
 };
 
 use super::chunk_item::WorkerLoaderChunkItem;
@@ -113,7 +113,7 @@ impl ChunkableModuleReference for WorkerModuleReference {
 impl ModuleReference for WorkerModuleReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.module)
+        *ModuleResolveResult::module(self.module, Export::All)
     }
 }
 

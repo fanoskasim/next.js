@@ -9,7 +9,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReferences, SingleChunkableModuleReference},
-    resolve::ModulePart,
+    resolve::{Export, ModulePart},
 };
 
 use crate::{
@@ -85,6 +85,7 @@ impl Module for SideEffectsModule {
                         SingleChunkableModuleReference::new(
                             *ResolvedVc::upcast(*side_effect),
                             Vc::cell(RcStr::from("side effect")),
+                            Export::All,
                         )
                         .to_resolved()
                         .await?,
@@ -98,6 +99,7 @@ impl Module for SideEffectsModule {
             SingleChunkableModuleReference::new(
                 *ResolvedVc::upcast(self.resolved_as),
                 Vc::cell(RcStr::from("resolved as")),
+                Export::All,
             )
             .to_resolved()
             .await?,

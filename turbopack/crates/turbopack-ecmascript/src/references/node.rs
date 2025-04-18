@@ -10,7 +10,7 @@ use turbopack_core::{
     reference::ModuleReference,
     resolve::{
         pattern::{read_matches, Pattern, PatternMatch},
-        ModuleResolveResult, RequestKey,
+        Export, ModuleResolveResult, RequestKey,
     },
     source::Source,
 };
@@ -33,11 +33,14 @@ impl PackageJsonReference {
 impl ModuleReference for PackageJsonReference {
     #[turbo_tasks::function]
     async fn resolve_reference(&self) -> Result<Vc<ModuleResolveResult>> {
-        Ok(*ModuleResolveResult::module(ResolvedVc::upcast(
-            RawModule::new(Vc::upcast(FileSource::new(*self.package_json)))
-                .to_resolved()
-                .await?,
-        )))
+        Ok(*ModuleResolveResult::module(
+            ResolvedVc::upcast(
+                RawModule::new(Vc::upcast(FileSource::new(*self.package_json)))
+                    .to_resolved()
+                    .await?,
+            ),
+            Export::All,
+        ))
     }
 }
 

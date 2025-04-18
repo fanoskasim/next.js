@@ -8,6 +8,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReferences, SingleModuleReference},
+    resolve::Export,
 };
 
 use crate::async_chunk::chunk_item::AsyncLoaderChunkItem;
@@ -65,6 +66,7 @@ impl Module for AsyncLoaderModule {
             SingleModuleReference::new(
                 *ResolvedVc::upcast(self.await?.inner),
                 inner_module_reference_description(),
+                Export::All,
             )
             .to_resolved()
             .await?,

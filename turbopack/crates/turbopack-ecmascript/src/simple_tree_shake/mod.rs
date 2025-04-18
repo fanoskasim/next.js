@@ -72,12 +72,10 @@ pub async fn compute_export_usage_info_single(
                 ResolvedVc::try_downcast::<Box<dyn EcmascriptChunkPlaceable>>(target.module)
             {
                 if let Some((_, ref_data)) = edge {
-                    if let Some(export) = &ref_data.export {
-                        used_exports
-                            .entry(target_module)
-                            .or_insert_with(Vec::new)
-                            .push(export.clone());
-                    }
+                    used_exports
+                        .entry(target_module)
+                        .or_insert_with(Vec::new)
+                        .push(ref_data.export.clone());
                 }
             }
 

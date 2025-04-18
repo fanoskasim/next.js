@@ -30,7 +30,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReference, ModuleReferences},
-    resolve::{origin::ResolveOrigin, parse::Request, ModuleResolveResult},
+    resolve::{origin::ResolveOrigin, parse::Request, Export, ModuleResolveResult},
     source::Source,
 };
 use turbopack_resolve::ecmascript::cjs_resolve;
@@ -266,7 +266,7 @@ impl RequireContextAssetReference {
 impl ModuleReference for RequireContextAssetReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(ResolvedVc::upcast(self.inner))
+        *ModuleResolveResult::module(ResolvedVc::upcast(self.inner), Export::All)
     }
 }
 
