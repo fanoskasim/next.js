@@ -1,3 +1,3 @@
-import { getCat } from "./lib.js";
+import { getCat } from "lib";
 
 console.log(`I like ${getCat()}`);
