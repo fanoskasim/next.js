@@ -39,10 +39,10 @@ function runTests(isDev) {
       .get('set-cookie')
       .split(',')
       .forEach((c) => {
-        c = cookie.parse(c)
-        const isBypass = c.__prerender_bypass
+        const values = cookie.parse(c)
+        const isBypass = values.__prerender_bypass
 
-        if (isBypass || c.__next_preview_data) {
+        if (isBypass || values.__next_preview_data) {
           if (previewCookie) previewCookie += '; '
 
           previewCookie += `${
