@@ -4,7 +4,7 @@ use anyhow::Result;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{
     graph::{AdjacencyMap, GraphTraversal},
-    FxIndexSet, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, ValueToString, Vc,
+    vdbg, FxIndexSet, ResolvedVc, TryFlatJoinIterExt, TryJoinIterExt, ValueToString, Vc,
 };
 
 use crate::{
@@ -314,6 +314,10 @@ pub async fn primary_chunkable_referenced_modules(
                     let resolved = result.primary_modules().owned().await?;
 
                     let export = result.await?.export.clone();
+
+                    if export == Export::All {
+                        vdbg!(reference);
+                    }
 
                     return Ok(Some((chunking_type.clone(), export, resolved)));
                 }
