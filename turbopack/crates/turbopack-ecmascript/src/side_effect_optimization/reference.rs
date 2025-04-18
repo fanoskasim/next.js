@@ -98,6 +98,7 @@ impl ModuleReference for EcmascriptModulePartReference {
 
         let export = match &self.part {
             Some(ModulePart::Export(export)) => Export::Named(export.clone()),
+            Some(ModulePart::Evaluation) => Export::Evaluation,
             _ => Export::All,
         };
 
