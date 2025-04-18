@@ -85,8 +85,8 @@ describe('manual-client-base-path', () => {
       proxy.ws(req, socket, head)
     })
 
-    // @ts-ignore type is incorrect
-    appPort = server.address().port
+    const address = server.address()
+    appPort = typeof address === 'string' ? address : address.port + ''
   })
   afterAll(async () => {
     await next.destroy()

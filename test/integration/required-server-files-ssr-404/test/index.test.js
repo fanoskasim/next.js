@@ -53,7 +53,8 @@ describe('Required Server Files', () => {
         })
 
         server = await startApp(nextApp)
-        appPort = server.address().port
+        const address = server.address()
+        appPort = typeof address === 'string' ? address : address.port + ''
 
         console.log(`Listening at ::${appPort}`)
       })

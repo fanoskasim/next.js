@@ -75,7 +75,8 @@ function runTests() {
           })
 
           server = await startApp(app)
-          appPort = server.address().port
+          const address = server.address()
+          appPort = typeof address === 'string' ? address : address.port + ''
         })
         afterAll(() => stopApp(server))
 

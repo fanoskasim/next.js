@@ -461,7 +461,8 @@ describe('404 handling', () => {
             nextConfig.write(`module.exports = { output: 'export' }`)
             await nextBuild(appDir, [], nextOpts)
             app = await startStaticServer(outdir, join(outdir, '404.html'))
-            appPort = app.address().port
+            const address = app.address()
+            appPort = typeof address === 'string' ? address : address.port + ''
           })
           afterAll(async () => {
             await stopApp(app)
