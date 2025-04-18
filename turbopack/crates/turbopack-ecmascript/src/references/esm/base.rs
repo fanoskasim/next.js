@@ -177,6 +177,7 @@ impl ModuleReference for EsmAssetReference {
 
                     let export = match part {
                         ModulePart::Export(rc_str) => Export::Named(rc_str.clone()),
+                        ModulePart::Evaluation => Export::Evaluation,
                         _ => Export::All,
                     };
 
