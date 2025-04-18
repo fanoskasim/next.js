@@ -638,18 +638,19 @@ impl ResolveResult {
         .resolved_cell()
     }
 
-    pub fn primary(result: ResolveResultItem) -> ResolvedVc<Self> {
-        Self::primary_with_key(RequestKey::default(), result)
+    pub fn primary(result: ResolveResultItem, export: Export) -> ResolvedVc<Self> {
+        Self::primary_with_key(RequestKey::default(), result, export)
     }
 
     pub fn primary_with_key(
         request_key: RequestKey,
         result: ResolveResultItem,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
@@ -2078,6 +2079,7 @@ async fn resolve_internal_inline(
                             .to_resolved()
                             .await?,
                         )),
+                        options_value.export.clone(),
                     )
                 } else {
                     *ResolveResult::primary_with_key(
@@ -2087,6 +2089,7 @@ async fn resolve_internal_inline(
                             ty: ExternalType::Url,
                             traced: ExternalTraced::Untraced,
                         },
+                        options_value.export.clone(),
                     )
                 }
             }
@@ -2104,6 +2107,7 @@ async fn resolve_internal_inline(
                         ty: ExternalType::Url,
                         traced: ExternalTraced::Untraced,
                     },
+                    options_value.export.clone(),
                 )
             }
             Request::Unknown { path } => {
@@ -2780,6 +2784,8 @@ async fn resolve_import_map_result(
     options: Vc<ResolveOptions>,
     query: Vc<RcStr>,
 ) -> Result<Option<Vc<ResolveResult>>> {
+    let options_value = options.await?;
+
     Ok(match result {
         ImportMapResult::Result(result) => Some(**result),
         ImportMapResult::Alias(request, alias_lookup_path) => {
@@ -2799,13 +2805,14 @@ async fn resolve_import_map_result(
                 ))
             }
         }
-        ImportMapResult::External(name, ty, traced) => {
-            Some(*ResolveResult::primary(ResolveResultItem::External {
+        ImportMapResult::External(name, ty, traced) => Some(*ResolveResult::primary(
+            ResolveResultItem::External {
                 name: name.clone(),
                 ty: *ty,
                 traced: *traced,
-            }))
-        }
+            },
+            options_value.export.clone(),
+        )),
         ImportMapResult::AliasExternal {
             name,
             ty,
@@ -2837,11 +2844,14 @@ async fn resolve_import_map_result(
                 .await?
                 .is_unresolvable_ref();
                 if is_external_resolvable {
-                    Some(*ResolveResult::primary(ResolveResultItem::External {
-                        name: name.clone(),
-                        ty: *ty,
-                        traced: *traced,
-                    }))
+                    Some(*ResolveResult::primary(
+                        ResolveResultItem::External {
+                            name: name.clone(),
+                            ty: *ty,
+                            traced: *traced,
+                        },
+                        options_value.export.clone(),
+                    ))
                 } else {
                     None
                 }

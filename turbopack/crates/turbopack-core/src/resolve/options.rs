@@ -15,7 +15,7 @@ use super::{
     plugin::BeforeResolvePlugin,
     AliasPattern, ExternalType, ResolveResult, ResolveResultItem,
 };
-use crate::resolve::{parse::Request, plugin::AfterResolvePlugin, ExternalTraced};
+use crate::resolve::{parse::Request, plugin::AfterResolvePlugin, Export, ExternalTraced};
 
 #[turbo_tasks::value(shared)]
 #[derive(Hash, Debug)]
@@ -434,12 +434,14 @@ async fn import_mapping_to_result(
             traced: *traced,
             lookup_dir: *lookup_dir,
         },
-        ReplacedImportMapping::Ignore => {
-            ImportMapResult::Result(ResolveResult::primary(ResolveResultItem::Ignore))
-        }
-        ReplacedImportMapping::Empty => {
-            ImportMapResult::Result(ResolveResult::primary(ResolveResultItem::Empty))
-        }
+        ReplacedImportMapping::Ignore => ImportMapResult::Result(ResolveResult::primary(
+            ResolveResultItem::Ignore,
+            Export::All,
+        )),
+        ReplacedImportMapping::Empty => ImportMapResult::Result(ResolveResult::primary(
+            ResolveResultItem::Empty,
+            Export::All,
+        )),
         ReplacedImportMapping::PrimaryAlternative(name, context) => {
             let request = Request::parse(Value::new(name.clone()))
                 .to_resolved()
@@ -604,6 +606,7 @@ pub struct ResolveOptions {
     pub loose_errors: bool,
     /// Whether to parse data URIs into modules (as opposed to keeping them as externals)
     pub parse_data_uris: bool,
+    pub export: Export,
 
     pub placeholder_for_future_extensions: (),
 }

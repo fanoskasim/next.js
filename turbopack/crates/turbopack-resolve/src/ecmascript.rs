@@ -11,7 +11,7 @@ use turbopack_core::{
         },
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
-        resolve, ModuleResolveResult, ResolveResult,
+        resolve, Export, ModulePart, ModuleResolveResult, ResolveResult,
     },
 };
 /// Retrieves the [ResolutionConditions] of the "into" and "in" package resolution options, so that
@@ -45,20 +45,16 @@ pub fn apply_esm_specific_options(
     options: Vc<ResolveOptions>,
     reference_type: Value<ReferenceType>,
 ) -> Vc<ResolveOptions> {
-    apply_esm_specific_options_internal(
-        options,
-        matches!(
-            reference_type.into_value(),
-            ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportWithType(_))
-        ),
-    )
+    apply_esm_specific_options_internal(options, reference_type)
 }
 
 #[turbo_tasks::function]
 async fn apply_esm_specific_options_internal(
     options: Vc<ResolveOptions>,
-    clear_extensions: bool,
+    reference_type: Value<ReferenceType>,
 ) -> Result<Vc<ResolveOptions>> {
+    let reference_type = reference_type.into_value();
+
     let mut options: ResolveOptions = options.owned().await?;
     // TODO set fully_specified when in strict ESM mode
     // options.fully_specified = true;
@@ -67,11 +63,20 @@ async fn apply_esm_specific_options_internal(
         conditions.insert("require".into(), ConditionValue::Unset);
     }
 
-    if clear_extensions {
+    if matches!(
+        reference_type,
+        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(_))
+    ) {
         options.extensions.clear();
     }
 
     options.parse_data_uris = true;
+    options.export = match reference_type {
+        ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(
+            ModulePart::Export(name),
+        )) => Export::Named(name.clone()),
+        _ => Export::All,
+    };
 
     Ok(options.cell())
 }
