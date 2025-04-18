@@ -1,7 +1,7 @@
 //! Intermediate tree shaking that uses global information but not good as the full tree shaking.
 
 use anyhow::{bail, Context, Result};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
@@ -58,11 +58,7 @@ pub async fn compute_export_usage_info(
 
     for item in results {
         for (k, v) in &item.await?.used_exports {
-            result
-                .used_exports
-                .entry(*k)
-                .or_insert_with(Vec::new)
-                .extend(v.clone());
+            result.used_exports.entry(*k).or_default().extend(v.clone());
         }
     }
 
@@ -74,7 +70,7 @@ pub async fn compute_export_usage_info_single(
     graph: ResolvedVc<SingleModuleGraph>,
 ) -> Result<Vc<ExportUsageInfo>> {
     let graph = graph.await?;
-    let mut used_exports = FxHashMap::default();
+    let mut usage = ExportUsageInfo::default();
 
     // Traverse the module graph
 
@@ -84,10 +80,11 @@ pub async fn compute_export_usage_info_single(
                 ResolvedVc::try_downcast::<Box<dyn EcmascriptChunkPlaceable>>(target.module)
             {
                 if let Some((_, ref_data)) = edge {
-                    used_exports
+                    usage
+                        .used_exports
                         .entry(target_module)
-                        .or_insert_with(Vec::new)
-                        .push(ref_data.export.clone());
+                        .or_default()
+                        .insert(ref_data.export.clone());
                 }
             }
 
@@ -95,11 +92,11 @@ pub async fn compute_export_usage_info_single(
         })
         .context("failed to traverse module graph")?;
 
-    Ok(ExportUsageInfo { used_exports }.cell())
+    Ok(usage.cell())
 }
 
 #[turbo_tasks::value]
 #[derive(Default)]
 pub struct ExportUsageInfo {
-    used_exports: FxHashMap<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>, Vec<ExportUsage>>,
+    used_exports: FxHashMap<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>, FxHashSet<ExportUsage>>,
 }
