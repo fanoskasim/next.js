@@ -1,4 +1,3 @@
 {
-  "runtime": "NodeJs",
   "treeShakingMode": "intermediate"
 }
