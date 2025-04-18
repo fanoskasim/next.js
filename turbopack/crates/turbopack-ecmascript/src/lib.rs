@@ -164,6 +164,8 @@ pub struct EcmascriptOptions {
     /// parsing fails. This is useful to keep the module graph structure intact when syntax errors
     /// are temporarily introduced.
     pub keep_last_successful_parse: bool,
+
+    pub enable_intermediate_tree_shaking: bool,
 }
 
 #[turbo_tasks::value(serialization = "auto_for_input")]
@@ -431,7 +433,10 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
             .reference_module_source_maps(Vc::upcast(self))
             .await?;
 
-        let tree_shaking_mode = self_resolved.options().await?.tree_shaking_mode;
+        let enable_intermediate_tree_shaking = self_resolved
+            .options()
+            .await?
+            .enable_intermediate_tree_shaking;
 
         Ok(EcmascriptModuleContent::new(
             EcmascriptModuleContentOptions {
@@ -449,7 +454,7 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
                 original_source_map: analyze_ref.source_map,
                 exports: analyze_ref.exports,
                 async_module_info,
-                tree_shaking_mode,
+                enable_intermediate_tree_shaking,
             },
         ))
     }
@@ -807,7 +812,7 @@ pub struct EcmascriptModuleContentOptions {
     original_source_map: ResolvedVc<OptionStringifiedSourceMap>,
     exports: ResolvedVc<EcmascriptExports>,
     async_module_info: Option<ResolvedVc<AsyncModuleInfo>>,
-    tree_shaking_mode: Option<TreeShakingMode>,
+    enable_intermediate_tree_shaking: bool,
 }
 
 #[turbo_tasks::value_impl]
@@ -830,7 +835,7 @@ impl EcmascriptModuleContent {
             original_source_map,
             exports,
             async_module_info,
-            tree_shaking_mode,
+            enable_intermediate_tree_shaking,
         } = input;
 
         let (esm_code_gens, additional_code_gens, code_gens) = async {
@@ -856,7 +861,7 @@ impl EcmascriptModuleContent {
                                 *chunking_context,
                                 module,
                                 Some(*parsed),
-                                tree_shaking_mode,
+                                enable_intermediate_tree_shaking,
                             )
                             .await?,
                     )

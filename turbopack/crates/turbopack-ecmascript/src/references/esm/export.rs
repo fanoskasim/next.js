@@ -34,7 +34,6 @@ use crate::{
     parse::ParseResult,
     runtime_functions::{TURBOPACK_DYNAMIC, TURBOPACK_ESM},
     simple_tree_shake::is_export_used,
-    TreeShakingMode,
 };
 
 #[derive(Clone, Hash, Debug, PartialEq, Eq, Serialize, Deserialize, TraceRawVcs, NonLocalValue)]
@@ -499,7 +498,7 @@ impl EsmExports {
         chunking_context: Vc<Box<dyn ChunkingContext>>,
         module: ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>,
         parsed: Option<Vc<ParseResult>>,
-        tree_shaking_mode: Option<TreeShakingMode>,
+        enable_intermediate_tree_shaking: bool,
     ) -> Result<CodeGeneration> {
         let expanded = self.expand_exports().await?;
         let parsed = if let Some(parsed) = parsed {
@@ -523,7 +522,7 @@ impl EsmExports {
 
         let mut props = Vec::new();
         for (exported, local) in &expanded.exports {
-            if tree_shaking_mode == Some(TreeShakingMode::Intermediate)
+            if enable_intermediate_tree_shaking
                 && !*is_export_used(module_graph, *module, exported.clone()).await?
             {
                 continue;
