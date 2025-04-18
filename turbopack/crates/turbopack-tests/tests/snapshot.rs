@@ -306,6 +306,10 @@ async fn run_test_operation(resource: RcStr) -> Result<Vc<FileSystemPath>> {
             rules: vec![(
                 ContextCondition::InDirectory("node_modules".into()),
                 ModuleOptionsContext {
+                    enable_intermediate_tree_shaking: matches!(
+                        options.tree_shaking_mode,
+                        Some(TreeShakingMode::Intermediate)
+                    ),
                     css: CssOptionsContext {
                         ..Default::default()
                     },
