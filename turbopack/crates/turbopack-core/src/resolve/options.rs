@@ -436,11 +436,11 @@ async fn import_mapping_to_result(
         },
         ReplacedImportMapping::Ignore => ImportMapResult::Result(ResolveResult::primary(
             ResolveResultItem::Ignore,
-            Export::All,
+            Export::Evaluation,
         )),
         ReplacedImportMapping::Empty => ImportMapResult::Result(ResolveResult::primary(
             ResolveResultItem::Empty,
-            Export::All,
+            Export::Evaluation,
         )),
         ReplacedImportMapping::PrimaryAlternative(name, context) => {
             let request = Request::parse(Value::new(name.clone()))
