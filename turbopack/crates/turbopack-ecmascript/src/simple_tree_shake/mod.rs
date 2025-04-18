@@ -3,7 +3,7 @@
 use anyhow::{Context, Result};
 use rustc_hash::FxHashMap;
 use turbo_rcstr::RcStr;
-use turbo_tasks::{ResolvedVc, Vc};
+use turbo_tasks::{vdbg, ResolvedVc, Vc};
 use turbopack_core::{
     module_graph::{ModuleGraph, SingleModuleGraph},
     resolve::Export,
@@ -21,10 +21,14 @@ pub async fn is_export_used(
         .resolve_strongly_consistent()
         .await?;
 
+    vdbg!(export_name.clone());
+
     let export_usage_info = export_usage_info.await?;
     let Some(exports) = export_usage_info.used_exports.get(&module) else {
         return Ok(Vc::cell(true));
     };
+
+    vdbg!(exports.clone());
 
     for export in exports {
         match export {
