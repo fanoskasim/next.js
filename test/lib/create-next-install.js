@@ -31,17 +31,20 @@ async function installDependencies(cwd, tmpDir) {
   })
 }
 
+/** @typedef {import('next/dist/trace').Span} Span */
+
 /**
  *
  * @param {object} param0
- * @param {import('@next/telemetry').Span} param0.parentSpan
- * @param {object} [param0.dependencies]
+ * @param {Span} param0.parentSpan
+ * @param {Record<string, string>} [param0.dependencies]
+ * @param {Record<string, string> | null} [param0.resolutions]
  * @param {object | null} [param0.resolutions]
- * @param { ((ctx: { dependencies: { [key: string]: string } }) => string) | string | null} [param0.installCommand]
+ * @param { ((ctx: { dependencies: Record<string, string>, resolutions: Record<string, string> | null }) => string) | string | null} [param0.installCommand]
  * @param {object} [param0.packageJson]
  * @param {string} [param0.dirSuffix]
  * @param {boolean} [param0.keepRepoDir]
- * @param {(span: import('@next/telemetry').Span, installDir: string) => Promise<void>} param0.beforeInstall
+ * @param {((span: Span, installDir: string) => Promise<void>) | undefined} [param0.beforeInstall]
  * @returns {Promise<{installDir: string, pkgPaths: Map<string, string>, tmpRepoDir: string | undefined}>}
  */
 async function createNextInstall({
@@ -118,7 +121,7 @@ async function createNextInstall({
           process.env.NEXT_TEST_NATIVE_DIR = path.join(
             origRepoDir,
             'node_modules/@next',
-            swcDirectory
+            swcDirectory ?? ''
           )
         }
 
@@ -133,6 +136,7 @@ async function createNextInstall({
             linkPackages({
               repoDir: tmpRepoDir,
               parentSpan: span,
+              nextSwcVersion: null,
             })
           )
       }
