@@ -51,13 +51,13 @@ pub async fn compute_export_usage_info(
 ) -> Result<Vc<ExportUsageInfo>> {
     let mut results = Vec::new();
     for g in &graph.await?.graphs {
-        results.push(compute_export_usage_info_single(**g).await?);
+        results.push(compute_export_usage_info_single(**g));
     }
 
     let mut result = ExportUsageInfo::default();
 
     for item in results {
-        for (k, v) in &item.used_exports {
+        for (k, v) in &item.await?.used_exports {
             result
                 .used_exports
                 .entry(*k)
