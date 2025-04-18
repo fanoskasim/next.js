@@ -1,9 +1,4 @@
 {
   "runtime": "NodeJs",
-  "treeShakingMode": "intermediate",
-  "minifyType": {
-    "Minify": {
-      "mangle": "optimal-size"
-    }
-  }
+  "treeShakingMode": "intermediate"
 }
