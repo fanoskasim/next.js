@@ -123,6 +123,7 @@ pub enum SpecifiedModuleType {
     Default,
     Serialize,
     Deserialize,
+    TaskInput,
     TraceRawVcs,
     NonLocalValue,
 )]
@@ -430,6 +431,8 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
             .reference_module_source_maps(Vc::upcast(self))
             .await?;
 
+        let tree_shaking_mode = self_resolved.options().await?.tree_shaking_mode;
+
         Ok(EcmascriptModuleContent::new(
             EcmascriptModuleContentOptions {
                 module: ResolvedVc::upcast(self_resolved),
@@ -446,6 +449,7 @@ impl EcmascriptAnalyzable for EcmascriptModuleAsset {
                 original_source_map: analyze_ref.source_map,
                 exports: analyze_ref.exports,
                 async_module_info,
+                tree_shaking_mode,
             },
         ))
     }
@@ -803,6 +807,7 @@ pub struct EcmascriptModuleContentOptions {
     original_source_map: ResolvedVc<OptionStringifiedSourceMap>,
     exports: ResolvedVc<EcmascriptExports>,
     async_module_info: Option<ResolvedVc<AsyncModuleInfo>>,
+    tree_shaking_mode: Option<TreeShakingMode>,
 }
 
 #[turbo_tasks::value_impl]
@@ -825,6 +830,7 @@ impl EcmascriptModuleContent {
             original_source_map,
             exports,
             async_module_info,
+            tree_shaking_mode,
         } = input;
 
         let (esm_code_gens, additional_code_gens, code_gens) = async {
@@ -850,6 +856,7 @@ impl EcmascriptModuleContent {
                                 *chunking_context,
                                 module,
                                 Some(*parsed),
+                                tree_shaking_mode,
                             )
                             .await?,
                     )

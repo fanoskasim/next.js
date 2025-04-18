@@ -54,6 +54,8 @@ impl EcmascriptChunkItem for EcmascriptModuleLocalsChunkItem {
             .reference_module_source_maps(*ResolvedVc::upcast(self.module))
             .await?;
 
+        let tree_shaking_mode = original_module.options().await?.tree_shaking_mode;
+
         let content = EcmascriptModuleContent::new(EcmascriptModuleContentOptions {
             module: ResolvedVc::upcast(self.module),
             parsed,
@@ -69,6 +71,7 @@ impl EcmascriptChunkItem for EcmascriptModuleLocalsChunkItem {
             original_source_map: analyze_result.source_map,
             exports,
             async_module_info,
+            tree_shaking_mode,
         });
 
         Ok(EcmascriptChunkItemContent::new(

@@ -56,6 +56,7 @@ pub use turbopack_ecmascript as ecmascript;
 use turbopack_ecmascript::{
     references::external_module::{CachedExternalModule, CachedExternalType},
     tree_shake::asset::EcmascriptModulePartAsset,
+    EcmascriptOptions,
 };
 use turbopack_json::JsonModuleAsset;
 pub use turbopack_resolve::{resolve::resolve_options, resolve_options_context};
@@ -154,8 +155,8 @@ async fn apply_module_type(
                     }
                 }
 
-                let options = options.await?;
-                match options.tree_shaking_mode {
+                let options_value = options.await?;
+                match options_value.tree_shaking_mode {
                     Some(TreeShakingMode::ModuleFragments) => {
                         Vc::upcast(EcmascriptModulePartAsset::select_part(
                             module,
@@ -171,6 +172,7 @@ async fn apply_module_type(
                                         Vc::upcast(EcmascriptModuleFacadeModule::new(
                                             Vc::upcast(module),
                                             part,
+                                            **options,
                                         ))
                                     } else {
                                         Vc::upcast(module)
@@ -188,18 +190,21 @@ async fn apply_module_type(
                                                 EcmascriptModuleFacadeModule::new(
                                                     Vc::upcast(module),
                                                     ModulePart::exports(),
+                                                    **options,
                                                 )
                                                 .resolve()
                                                 .await?,
                                             ),
                                             part,
                                             side_effect_free_packages,
+                                            **options,
                                         )
                                     } else {
                                         apply_reexport_tree_shaking(
                                             Vc::upcast(module.resolve().await?),
                                             part,
                                             side_effect_free_packages,
+                                            **options,
                                         )
                                     }
                                 }
@@ -213,6 +218,7 @@ async fn apply_module_type(
                             Vc::upcast(EcmascriptModuleFacadeModule::new(
                                 Vc::upcast(module),
                                 ModulePart::facade(),
+                                **options,
                             ))
                         } else {
                             Vc::upcast(module)
@@ -276,6 +282,7 @@ async fn apply_reexport_tree_shaking(
     module: Vc<Box<dyn EcmascriptChunkPlaceable>>,
     part: ModulePart,
     side_effect_free_packages: Vc<Glob>,
+    options: ResolvedVc<EcmascriptOptions>,
 ) -> Result<Vc<Box<dyn Module>>> {
     if let ModulePart::Export(export) = &part {
         let FollowExportsResult {
@@ -290,12 +297,14 @@ async fn apply_reexport_tree_shaking(
                 Vc::upcast(EcmascriptModuleFacadeModule::new(
                     **final_module,
                     ModulePart::renamed_export(new_export.clone(), export.clone()),
+                    *options,
                 ))
             }
         } else {
             Vc::upcast(EcmascriptModuleFacadeModule::new(
                 **final_module,
                 ModulePart::renamed_namespace(export.clone()),
+                *options,
             ))
         };
         return Ok(module);
