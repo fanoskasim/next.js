@@ -130,6 +130,7 @@ pub enum SpecifiedModuleType {
 pub enum TreeShakingMode {
     #[default]
     ModuleFragments,
+    Intermediate,
     ReexportsOnly,
 }
 

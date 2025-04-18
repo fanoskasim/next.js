@@ -770,6 +770,22 @@ pub(crate) async fn analyse_ecmascript_module_internal(
                         ImportedSymbol::Part(part_id) => Some(ModulePart::internal(*part_id)),
                         ImportedSymbol::Exports => Some(ModulePart::exports()),
                     },
+                    Some(TreeShakingMode::Intermediate) => match &r.imported_symbol {
+                        ImportedSymbol::ModuleEvaluation => {
+                            should_add_evaluation = true;
+                            None
+                        }
+                        ImportedSymbol::Symbol(name) => Some(ModulePart::export((&**name).into())),
+                        ImportedSymbol::PartEvaluation(_) | ImportedSymbol::Part(_) => {
+                            bail!(
+                                "Internal imports doesn't exist in intermediate mode when \
+                                 importing {:?} from {}",
+                                r.imported_symbol,
+                                r.module_path
+                            );
+                        }
+                        ImportedSymbol::Exports => None,
+                    },
                     Some(TreeShakingMode::ReexportsOnly) => match &r.imported_symbol {
                         ImportedSymbol::ModuleEvaluation => {
                             should_add_evaluation = true;
@@ -2568,10 +2584,11 @@ async fn handle_free_var_reference(
                         ),
                         Default::default(),
                         match state.tree_shaking_mode {
-                            Some(TreeShakingMode::ModuleFragments)
-                            | Some(TreeShakingMode::ReexportsOnly) => {
-                                export.clone().map(ModulePart::export)
-                            }
+                            Some(
+                                TreeShakingMode::ModuleFragments
+                                | TreeShakingMode::Intermediate
+                                | TreeShakingMode::ReexportsOnly,
+                            ) => export.clone().map(ModulePart::export),
                             None => None,
                         },
                         state.import_externals,
