@@ -217,6 +217,7 @@ pub async fn resolve_node_pre_gyp_files(
                         })
                         .try_join()
                         .await?,
+                    Export::All,
                 ));
             }
         };
@@ -322,6 +323,7 @@ pub async fn resolve_node_gyp_build_files(
                                 .await?
                                 .into_iter(),
                             merged_affecting_sources,
+                            Export::All,
                         ));
                     }
                 }
@@ -444,5 +446,5 @@ pub async fn resolve_node_bindings_files(
         .map(|try_dir| try_path(format!("{}/{}", try_dir, &file_name).into()))
         .try_flat_join()
         .await?;
-    Ok(*ModuleResolveResult::modules(modules))
+    Ok(*ModuleResolveResult::modules(modules, Export::All))
 }

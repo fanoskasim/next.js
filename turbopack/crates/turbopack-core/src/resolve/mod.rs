@@ -191,6 +191,7 @@ impl ModuleResolveResult {
 
     pub fn modules(
         modules: impl IntoIterator<Item = (RequestKey, ResolvedVc<Box<dyn Module>>)>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: modules
@@ -198,7 +199,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
@@ -206,6 +207,7 @@ impl ModuleResolveResult {
     pub fn modules_with_affecting_sources(
         modules: impl IntoIterator<Item = (RequestKey, ResolvedVc<Box<dyn Module>>)>,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: modules
@@ -213,7 +215,7 @@ impl ModuleResolveResult {
                 .map(|(k, v)| (k, ModuleResolveResultItem::Module(v)))
                 .collect(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
