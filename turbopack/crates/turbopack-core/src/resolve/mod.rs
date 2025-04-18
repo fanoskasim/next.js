@@ -661,27 +661,29 @@ impl ResolveResult {
         request_key: RequestKey,
         result: ResolveResultItem,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
 
-    pub fn source(source: ResolvedVc<Box<dyn Source>>) -> ResolvedVc<Self> {
-        Self::source_with_key(RequestKey::default(), source)
+    pub fn source(source: ResolvedVc<Box<dyn Source>>, export: Export) -> ResolvedVc<Self> {
+        Self::source_with_key(RequestKey::default(), source, export)
     }
 
     pub fn source_with_key(
         request_key: RequestKey,
         source: ResolvedVc<Box<dyn Source>>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
@@ -690,11 +692,12 @@ impl ResolveResult {
         request_key: RequestKey,
         source: ResolvedVc<Box<dyn Source>>,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
+        export: Export,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: Export::All,
+            export,
         }
         .resolved_cell()
     }
@@ -1547,10 +1550,12 @@ pub async fn resolve_raw(
     lookup_dir: Vc<FileSystemPath>,
     path: Vc<Pattern>,
     force_in_lookup_dir: bool,
+    export: Export,
 ) -> Result<Vc<ResolveResult>> {
     async fn to_result(
         request: &str,
         path: ResolvedVc<FileSystemPath>,
+        export: Export,
     ) -> Result<Vc<ResolveResult>> {
         let RealPathResult { path, symlinks } = &*path.realpath_with_links().await?;
         Ok(*ResolveResult::source_with_affecting_sources(
@@ -1565,6 +1570,7 @@ pub async fn resolve_raw(
                 })
                 .try_join()
                 .await?,
+            export,
         ))
     }
 
@@ -1589,7 +1595,7 @@ pub async fn resolve_raw(
         } else {
             for m in matches.iter() {
                 if let PatternMatch::File(request, path) = m {
-                    results.push(to_result(request, *path).await?);
+                    results.push(to_result(request, *path, export.clone()).await?);
                 }
             }
         }
@@ -1607,7 +1613,7 @@ pub async fn resolve_raw(
         }
         for m in matches.iter() {
             if let PatternMatch::File(request, path) = m {
-                results.push(to_result(request, *path).await?);
+                results.push(to_result(request, *path, export.clone()).await?);
             }
         }
     }
@@ -1836,6 +1842,7 @@ async fn resolve_internal_inline(
     };
     async move {
         let options_value: &ResolveOptions = &*options.await?;
+
         let request_value = request.await?;
 
         // Apply import mappings if provided
@@ -2497,6 +2504,7 @@ async fn apply_in_package(
                 request_key,
                 ResolveResultItem::Ignore,
                 refs,
+                options_value.export.clone(),
             )));
         }
 
@@ -2945,6 +2953,7 @@ async fn resolved(
             })
             .try_join()
             .await?,
+        options_value.export.clone(),
     ))
 }
 
