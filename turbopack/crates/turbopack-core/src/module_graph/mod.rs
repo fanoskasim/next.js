@@ -265,7 +265,7 @@ impl SingleModuleGraph {
                         module,
                         layer,
                         ident: _,
-                        export: _,
+                        export,
                     } => {
                         // Find the current node, if it was already added
                         let current_idx = if let Some(current_idx) = modules.get(&module) {
@@ -284,7 +284,7 @@ impl SingleModuleGraph {
                         };
                         // Add the edge
                         if let Some((parent_idx, ref_data)) = parent_edge {
-                            graph.add_edge(parent_idx, current_idx, ref_data);
+                            graph.add_edge(parent_idx, current_idx, RefData { export, ..ref_data });
                         }
                     }
                     SingleModuleGraphBuilderNode::VisitedModule { module, idx } => {
