@@ -1350,11 +1350,13 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
 
     fn edges(&mut self, node: &SingleModuleGraphBuilderNode) -> Self::EdgesFuture {
         // Destructure beforehand to not have to clone the whole node when entering the async block
-        let (module, chunkable_ref_target) = match node {
-            SingleModuleGraphBuilderNode::Module { module, .. } => (Some(*module), None),
-            SingleModuleGraphBuilderNode::ChunkableReference { target, .. } => {
-                (None, Some(*target))
+        let (module, chunkable_ref_target, export) = match node {
+            SingleModuleGraphBuilderNode::Module { module, export, .. } => {
+                (Some(*module), None, export.clone())
             }
+            SingleModuleGraphBuilderNode::ChunkableReference {
+                target, ref_data, ..
+            } => (None, Some(*target), ref_data.export.clone()),
             // These are always skipped in `visit()`
             SingleModuleGraphBuilderNode::VisitedModule { .. }
             | SingleModuleGraphBuilderNode::Issues(_) => unreachable!(),
@@ -1413,11 +1415,8 @@ impl Visit<SingleModuleGraphBuilderNode> for SingleModuleGraphBuilder<'_> {
                                 *idx,
                             )
                         } else {
-                            SingleModuleGraphBuilderNode::new_module(
-                                chunkable_ref_target,
-                                Export::All,
-                            )
-                            .await?
+                            SingleModuleGraphBuilderNode::new_module(chunkable_ref_target, export)
+                                .await?
                         },
                     }]
                 }
