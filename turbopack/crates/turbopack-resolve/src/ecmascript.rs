@@ -11,7 +11,7 @@ use turbopack_core::{
         },
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
-        resolve, Export, ModulePart, ModuleResolveResult, ResolveResult,
+        resolve, ExportUsage, ModulePart, ModuleResolveResult, ResolveResult,
     },
 };
 /// Retrieves the [ResolutionConditions] of the "into" and "in" package resolution options, so that
@@ -74,12 +74,12 @@ async fn apply_esm_specific_options_internal(
     options.export = match reference_type {
         ReferenceType::EcmaScriptModules(EcmaScriptModulesReferenceSubType::ImportPart(part)) => {
             match part {
-                ModulePart::Export(name) => Export::Named(name.clone()),
-                ModulePart::Evaluation => Export::Evaluation,
-                _ => Export::All,
+                ModulePart::Export(name) => ExportUsage::Named(name.clone()),
+                ModulePart::Evaluation => ExportUsage::Evaluation,
+                _ => ExportUsage::All,
             }
         }
-        _ => Export::All,
+        _ => ExportUsage::All,
     };
 
     Ok(options.cell())

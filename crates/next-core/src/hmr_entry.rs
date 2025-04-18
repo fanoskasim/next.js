@@ -14,7 +14,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::{ModuleReference, ModuleReferences},
-    resolve::{Export, ModuleResolveResult},
+    resolve::{ExportUsage, ModuleResolveResult},
 };
 use turbopack_ecmascript::{
     chunk::{
@@ -132,7 +132,7 @@ impl ValueToString for HmrEntryModuleReference {
 impl ModuleReference for HmrEntryModuleReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.module, Export::All)
+        *ModuleResolveResult::module(self.module, ExportUsage::All)
     }
 }
 

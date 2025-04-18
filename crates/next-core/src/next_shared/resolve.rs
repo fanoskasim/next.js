@@ -15,7 +15,7 @@ use turbopack_core::{
             AfterResolvePlugin, AfterResolvePluginCondition, BeforeResolvePlugin,
             BeforeResolvePluginCondition,
         },
-        Export, ExternalTraced, ExternalType, ResolveResult, ResolveResultItem,
+        ExportUsage, ExternalTraced, ExternalType, ResolveResult, ResolveResultItem,
         ResolveResultOption,
     },
 };
@@ -147,7 +147,7 @@ impl BeforeResolvePlugin for InvalidImportResolvePlugin {
 
         ResolveResultOption::some(*ResolveResult::primary(
             ResolveResultItem::Error(ResolvedVc::cell(self.message.join("\n").into())),
-            Export::All,
+            ExportUsage::All,
         ))
     }
 }
@@ -250,7 +250,7 @@ impl AfterResolvePlugin for NextExternalResolvePlugin {
                 ty: ExternalType::CommonJs,
                 traced: ExternalTraced::Traced,
             },
-            Export::All,
+            ExportUsage::All,
         ))))
     }
 }
@@ -325,7 +325,7 @@ impl AfterResolvePlugin for NextNodeSharedRuntimeResolvePlugin {
 
         Ok(Vc::cell(Some(ResolveResult::source(
             ResolvedVc::upcast(FileSource::new(new_path).to_resolved().await?),
-            Export::All,
+            ExportUsage::All,
         ))))
     }
 }
@@ -425,7 +425,7 @@ impl AfterResolvePlugin for NextSharedRuntimeResolvePlugin {
         let new_path = fs_path.root().join(modified_path.into());
         Ok(Vc::cell(Some(ResolveResult::source(
             ResolvedVc::upcast(FileSource::new(new_path).to_resolved().await?),
-            Export::All,
+            ExportUsage::All,
         ))))
     }
 }

@@ -6,7 +6,7 @@ use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Vc};
 use turbopack_core::{
     module_graph::{ModuleGraph, SingleModuleGraph},
-    resolve::Export,
+    resolve::ExportUsage,
 };
 
 use crate::chunk::EcmascriptChunkPlaceable;
@@ -30,13 +30,13 @@ pub async fn is_export_used(
 
     for export in exports {
         match export {
-            Export::Named(rc_str) => {
+            ExportUsage::Named(rc_str) => {
                 if rc_str == &export_name {
                     return Ok(Vc::cell(true));
                 }
             }
-            Export::Evaluation => {}
-            Export::All => {
+            ExportUsage::Evaluation => {}
+            ExportUsage::All => {
                 return Ok(Vc::cell(true));
             }
         }
@@ -101,5 +101,5 @@ pub async fn compute_export_usage_info_single(
 #[turbo_tasks::value]
 #[derive(Default)]
 pub struct ExportUsageInfo {
-    used_exports: FxHashMap<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>, Vec<Export>>,
+    used_exports: FxHashMap<ResolvedVc<Box<dyn EcmascriptChunkPlaceable>>, Vec<ExportUsage>>,
 }

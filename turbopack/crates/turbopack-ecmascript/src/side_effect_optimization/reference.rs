@@ -10,7 +10,7 @@ use turbopack_core::{
     module::Module,
     module_graph::ModuleGraph,
     reference::ModuleReference,
-    resolve::{Export, ModulePart, ModuleResolveResult},
+    resolve::{ExportUsage, ModulePart, ModuleResolveResult},
 };
 
 use super::{
@@ -108,9 +108,9 @@ impl ModuleReference for EcmascriptModulePartReference {
         };
 
         let export = match &self.part {
-            Some(ModulePart::Export(export)) => Export::Named(export.clone()),
-            Some(ModulePart::Evaluation) => Export::Evaluation,
-            _ => Export::All,
+            Some(ModulePart::Export(export)) => ExportUsage::Named(export.clone()),
+            Some(ModulePart::Evaluation) => ExportUsage::Evaluation,
+            _ => ExportUsage::All,
         };
 
         Ok(*ModuleResolveResult::module(module, export))

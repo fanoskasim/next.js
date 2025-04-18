@@ -7,7 +7,8 @@ use turbo_tasks_fs::FileSystemPath;
 
 use super::{options::ResolveOptions, parse::Request, ModuleResolveResult};
 use crate::{
-    context::AssetContext, module::OptionModule, reference_type::ReferenceType, resolve::Export,
+    context::AssetContext, module::OptionModule, reference_type::ReferenceType,
+    resolve::ExportUsage,
 };
 
 /// A location where resolving can occur from. It carries some meta information
@@ -88,7 +89,7 @@ async fn resolve_asset(
     reference_type: Value<ReferenceType>,
 ) -> Result<Vc<ModuleResolveResult>> {
     if let Some(asset) = *resolve_origin.get_inner_asset(request).await? {
-        return Ok(*ModuleResolveResult::module(asset, Export::All));
+        return Ok(*ModuleResolveResult::module(asset, ExportUsage::All));
     }
     Ok(resolve_origin
         .asset_context()

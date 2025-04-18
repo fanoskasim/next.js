@@ -7,7 +7,7 @@ use super::ModuleReference;
 use crate::{
     file_source::FileSource,
     raw_module::RawModule,
-    resolve::{Export, ModuleResolveResult},
+    resolve::{ExportUsage, ModuleResolveResult},
     source_map::{
         utils::resolve_source_map_sources, GenerateSourceMap, OptionStringifiedSourceMap,
     },
@@ -50,7 +50,7 @@ impl ModuleReference for SourceMapReference {
                         .to_resolved()
                         .await?,
                 ),
-                Export::All,
+                ExportUsage::All,
             ));
         }
         Ok(*ModuleResolveResult::unresolvable())

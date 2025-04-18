@@ -13,7 +13,7 @@ use turbopack_core::{
     resolve::{
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
-        Export, ModuleResolveResult,
+        ExportUsage, ModuleResolveResult,
     },
     source::Source,
 };
@@ -246,7 +246,7 @@ impl ModuleReference for TsExtendsReference {
                     .to_resolved()
                     .await?,
             ),
-            Export::All,
+            ExportUsage::All,
         ))
     }
 }

@@ -117,7 +117,7 @@ impl ModuleResolveResultItem {
     NonLocalValue,
     TaskInput,
 )]
-pub enum Export {
+pub enum ExportUsage {
     Named(RcStr),
     /// This means the whole content of the module is used.
     #[default]
@@ -131,7 +131,7 @@ pub enum Export {
 pub struct ModuleResolveResult {
     pub primary: SliceMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
-    pub export: Export,
+    pub export: ExportUsage,
 }
 
 impl ModuleResolveResult {
@@ -139,7 +139,7 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export: ExportUsage::All,
         }
         .resolved_cell()
     }
@@ -150,19 +150,19 @@ impl ModuleResolveResult {
         ModuleResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: Export::All,
+            export: ExportUsage::All,
         }
         .resolved_cell()
     }
 
-    pub fn module(module: ResolvedVc<Box<dyn Module>>, export: Export) -> ResolvedVc<Self> {
+    pub fn module(module: ResolvedVc<Box<dyn Module>>, export: ExportUsage) -> ResolvedVc<Self> {
         Self::module_with_key(RequestKey::default(), module, export)
     }
 
     pub fn module_with_key(
         request_key: RequestKey,
         module: ResolvedVc<Box<dyn Module>>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: vec![(request_key, ModuleResolveResultItem::Module(module))]
@@ -184,14 +184,14 @@ impl ModuleResolveResult {
             )]
             .into_boxed_slice(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export: ExportUsage::All,
         }
         .resolved_cell()
     }
 
     pub fn modules(
         modules: impl IntoIterator<Item = (RequestKey, ResolvedVc<Box<dyn Module>>)>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: modules
@@ -207,7 +207,7 @@ impl ModuleResolveResult {
     pub fn modules_with_affecting_sources(
         modules: impl IntoIterator<Item = (RequestKey, ResolvedVc<Box<dyn Module>>)>,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ModuleResolveResult {
             primary: modules
@@ -244,7 +244,7 @@ impl ModuleResolveResult {
 pub struct ModuleResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ModuleResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-    pub export: Export,
+    pub export: ExportUsage,
 }
 
 impl From<ModuleResolveResultBuilder> for ModuleResolveResult {
@@ -563,7 +563,7 @@ impl RequestKey {
 pub struct ResolveResult {
     pub primary: SliceMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Box<[ResolvedVc<Box<dyn Source>>]>,
-    pub export: Export,
+    pub export: ExportUsage,
 }
 
 #[turbo_tasks::value_impl]
@@ -626,7 +626,7 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: Default::default(),
-            export: Export::All,
+            export: ExportUsage::All,
         }
         .resolved_cell()
     }
@@ -637,19 +637,19 @@ impl ResolveResult {
         ResolveResult {
             primary: Default::default(),
             affecting_sources: affecting_sources.into_boxed_slice(),
-            export: Export::All,
+            export: ExportUsage::All,
         }
         .resolved_cell()
     }
 
-    pub fn primary(result: ResolveResultItem, export: Export) -> ResolvedVc<Self> {
+    pub fn primary(result: ResolveResultItem, export: ExportUsage) -> ResolvedVc<Self> {
         Self::primary_with_key(RequestKey::default(), result, export)
     }
 
     pub fn primary_with_key(
         request_key: RequestKey,
         result: ResolveResultItem,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
@@ -663,7 +663,7 @@ impl ResolveResult {
         request_key: RequestKey,
         result: ResolveResultItem,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, result)].into_boxed_slice(),
@@ -673,14 +673,14 @@ impl ResolveResult {
         .resolved_cell()
     }
 
-    pub fn source(source: ResolvedVc<Box<dyn Source>>, export: Export) -> ResolvedVc<Self> {
+    pub fn source(source: ResolvedVc<Box<dyn Source>>, export: ExportUsage) -> ResolvedVc<Self> {
         Self::source_with_key(RequestKey::default(), source, export)
     }
 
     pub fn source_with_key(
         request_key: RequestKey,
         source: ResolvedVc<Box<dyn Source>>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
@@ -694,7 +694,7 @@ impl ResolveResult {
         request_key: RequestKey,
         source: ResolvedVc<Box<dyn Source>>,
         affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-        export: Export,
+        export: ExportUsage,
     ) -> ResolvedVc<Self> {
         ResolveResult {
             primary: vec![(request_key, ResolveResultItem::Source(source))].into_boxed_slice(),
@@ -867,7 +867,7 @@ impl ResolveResult {
 pub struct ResolveResultBuilder {
     pub primary: FxIndexMap<RequestKey, ResolveResultItem>,
     pub affecting_sources: Vec<ResolvedVc<Box<dyn Source>>>,
-    pub export: Export,
+    pub export: ExportUsage,
 }
 
 impl From<ResolveResultBuilder> for ResolveResult {
@@ -1552,12 +1552,12 @@ pub async fn resolve_raw(
     lookup_dir: Vc<FileSystemPath>,
     path: Vc<Pattern>,
     force_in_lookup_dir: bool,
-    export: Export,
+    export: ExportUsage,
 ) -> Result<Vc<ResolveResult>> {
     async fn to_result(
         request: &str,
         path: ResolvedVc<FileSystemPath>,
-        export: Export,
+        export: ExportUsage,
     ) -> Result<Vc<ResolveResult>> {
         let RealPathResult { path, symlinks } = &*path.realpath_with_links().await?;
         Ok(*ResolveResult::source_with_affecting_sources(

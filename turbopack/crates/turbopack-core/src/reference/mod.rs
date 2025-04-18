@@ -12,7 +12,7 @@ use crate::{
     module::{Module, Modules},
     output::{OutputAsset, OutputAssets},
     raw_module::RawModule,
-    resolve::{Export, ModuleResolveResult, RequestKey},
+    resolve::{ExportUsage, ModuleResolveResult, RequestKey},
 };
 pub mod source_map;
 
@@ -50,7 +50,7 @@ impl ModuleReferences {
 pub struct SingleModuleReference {
     asset: ResolvedVc<Box<dyn Module>>,
     description: ResolvedVc<RcStr>,
-    export: Export,
+    export: ExportUsage,
 }
 
 #[turbo_tasks::value_impl]
@@ -77,7 +77,7 @@ impl SingleModuleReference {
     pub fn new(
         asset: ResolvedVc<Box<dyn Module>>,
         description: ResolvedVc<RcStr>,
-        export: Export,
+        export: ExportUsage,
     ) -> Vc<Self> {
         Self::cell(SingleModuleReference {
             asset,
@@ -97,7 +97,7 @@ impl SingleModuleReference {
 pub struct SingleChunkableModuleReference {
     asset: ResolvedVc<Box<dyn Module>>,
     description: ResolvedVc<RcStr>,
-    export: Export,
+    export: ExportUsage,
 }
 
 #[turbo_tasks::value_impl]
@@ -106,7 +106,7 @@ impl SingleChunkableModuleReference {
     pub fn new(
         asset: ResolvedVc<Box<dyn Module>>,
         description: ResolvedVc<RcStr>,
-        export: Export,
+        export: ExportUsage,
     ) -> Vc<Self> {
         Self::cell(SingleChunkableModuleReference {
             asset,
@@ -228,7 +228,7 @@ pub struct TracedModuleReference {
 impl ModuleReference for TracedModuleReference {
     #[turbo_tasks::function]
     fn resolve_reference(&self) -> Vc<ModuleResolveResult> {
-        *ModuleResolveResult::module(self.module, Export::All)
+        *ModuleResolveResult::module(self.module, ExportUsage::All)
     }
 }
 
@@ -290,7 +290,7 @@ pub async fn primary_referenced_modules(module: Vc<Box<dyn Module>>) -> Result<V
 
 type ModulesVec = Vec<ResolvedVc<Box<dyn Module>>>;
 #[turbo_tasks::value(transparent)]
-pub struct ModulesWithRefData(Vec<(ChunkingType, Export, ModulesVec)>);
+pub struct ModulesWithRefData(Vec<(ChunkingType, ExportUsage, ModulesVec)>);
 
 /// Aggregates all primary [Module]s referenced by an [Module] via [ChunkableModuleReference]s.
 /// This does not include transitively references [Module]s, only includes

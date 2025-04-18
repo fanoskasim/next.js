@@ -32,7 +32,7 @@ use crate::{
         traced_di_graph::{iter_neighbors_rev, TracedDiGraph},
     },
     reference::primary_chunkable_referenced_modules,
-    resolve::Export,
+    resolve::ExportUsage,
 };
 
 pub mod async_module_info;
@@ -197,7 +197,7 @@ pub struct SingleModuleGraph {
 )]
 pub struct RefData {
     pub chunking_type: ChunkingType,
-    pub export: Export,
+    pub export: ExportUsage,
 }
 
 impl SingleModuleGraph {
@@ -213,7 +213,7 @@ impl SingleModuleGraph {
             .flat_map(|e| e.entries())
             .map(|e| async move {
                 Ok(SingleModuleGraphBuilderEdge {
-                    to: SingleModuleGraphBuilderNode::new_module(e, Export::All).await?,
+                    to: SingleModuleGraphBuilderNode::new_module(e, ExportUsage::All).await?,
                 })
             })
             .try_join()
@@ -1270,7 +1270,7 @@ enum SingleModuleGraphBuilderNode {
         module: ResolvedVc<Box<dyn Module>>,
         layer: Option<ReadRef<RcStr>>,
         ident: ReadRef<RcStr>,
-        export: Export,
+        export: ExportUsage,
     },
     /// A reference to a module that is already listed in visited_modules
     VisitedModule {
@@ -1283,7 +1283,7 @@ enum SingleModuleGraphBuilderNode {
 }
 
 impl SingleModuleGraphBuilderNode {
-    async fn new_module(module: ResolvedVc<Box<dyn Module>>, export: Export) -> Result<Self> {
+    async fn new_module(module: ResolvedVc<Box<dyn Module>>, export: ExportUsage) -> Result<Self> {
         let ident = module.ident();
         Ok(Self::Module {
             module,

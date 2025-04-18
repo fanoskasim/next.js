@@ -12,7 +12,7 @@ use turbopack_core::{
     resolve::{
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
-        resolve, Export, ModuleResolveResult, ModuleResolveResultItem,
+        resolve, ExportUsage, ModuleResolveResult, ModuleResolveResultItem,
     },
     source::Source,
 };
@@ -106,7 +106,7 @@ impl ModuleReference for WebpackChunkAssetReference {
                             .to_resolved()
                             .await?,
                     ),
-                    Export::All,
+                    ExportUsage::All,
                 )
             }
             WebpackRuntime::None => *ModuleResolveResult::unresolvable(),
@@ -144,7 +144,7 @@ impl ModuleReference for WebpackEntryAssetReference {
                     .to_resolved()
                     .await?,
             ),
-            Export::All,
+            ExportUsage::All,
         ))
     }
 }

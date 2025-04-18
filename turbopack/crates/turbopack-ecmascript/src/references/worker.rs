@@ -17,7 +17,9 @@ use turbopack_core::{
     module_graph::ModuleGraph,
     reference::ModuleReference,
     reference_type::{ReferenceType, WorkerReferenceSubType},
-    resolve::{origin::ResolveOrigin, parse::Request, url_resolve, Export, ModuleResolveResult},
+    resolve::{
+        origin::ResolveOrigin, parse::Request, url_resolve, ExportUsage, ModuleResolveResult,
+    },
 };
 
 use crate::{
@@ -93,7 +95,7 @@ impl ModuleReference for WorkerAssetReference {
         if let Some(worker_loader_module) = self.worker_loader_module().await? {
             Ok(*ModuleResolveResult::module(
                 ResolvedVc::upcast(worker_loader_module.to_resolved().await?),
-                Export::All,
+                ExportUsage::All,
             ))
         } else {
             Ok(*ModuleResolveResult::unresolvable())

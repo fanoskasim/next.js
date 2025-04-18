@@ -23,7 +23,7 @@ use turbopack_core::{
     resolve::{
         origin::{ResolveOrigin, ResolveOriginExt},
         parse::Request,
-        Export, ExternalType, ModulePart, ModuleResolveResult, ModuleResolveResultItem,
+        ExportUsage, ExternalType, ModulePart, ModuleResolveResult, ModuleResolveResultItem,
     },
 };
 use turbopack_resolve::ecmascript::esm_resolve;
@@ -176,9 +176,9 @@ impl ModuleReference for EsmAssetReference {
                             .expect("EsmAssetReference origin should be a EcmascriptModuleAsset");
 
                     let export = match part {
-                        ModulePart::Export(rc_str) => Export::Named(rc_str.clone()),
-                        ModulePart::Evaluation => Export::Evaluation,
-                        _ => Export::All,
+                        ModulePart::Export(rc_str) => ExportUsage::Named(rc_str.clone()),
+                        ModulePart::Evaluation => ExportUsage::Evaluation,
+                        _ => ExportUsage::All,
                     };
 
                     return Ok(*ModuleResolveResult::module(
