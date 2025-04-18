@@ -1,6 +1,6 @@
 //! Intermediate tree shaking that uses global information but not good as the full tree shaking.
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use rustc_hash::FxHashMap;
 use turbo_rcstr::RcStr;
 use turbo_tasks::{ResolvedVc, Vc};
@@ -23,7 +23,9 @@ pub async fn is_export_used(
 
     let export_usage_info = export_usage_info.await?;
     let Some(exports) = export_usage_info.used_exports.get(&module) else {
-        return Ok(Vc::cell(true));
+        bail!(
+            "module not found in export usage info. Something is wrong with the export usage info."
+        );
     };
 
     for export in exports {
@@ -47,21 +49,30 @@ pub async fn is_export_used(
 pub async fn compute_export_usage_info(
     graph: ResolvedVc<ModuleGraph>,
 ) -> Result<Vc<ExportUsageInfo>> {
-    // Layout segment optimization, we can individually compute the async modules for each graph.
-    let mut result: Vc<ExportUsageInfo> = ExportUsageInfo::default().cell();
+    let mut results = Vec::new();
     for g in &graph.await?.graphs {
-        result = compute_export_usage_info_single(**g, result);
+        results.push(compute_export_usage_info_single(**g).await?);
     }
-    Ok(result)
+
+    let mut result = ExportUsageInfo::default();
+
+    for item in results {
+        for (k, v) in &item.used_exports {
+            result
+                .used_exports
+                .entry(*k)
+                .or_insert_with(Vec::new)
+                .extend(v.clone());
+        }
+    }
+
+    Ok(result.cell())
 }
 
 #[turbo_tasks::function]
 pub async fn compute_export_usage_info_single(
     graph: ResolvedVc<SingleModuleGraph>,
-    parent_export_usage_info: ResolvedVc<ExportUsageInfo>,
 ) -> Result<Vc<ExportUsageInfo>> {
-    let parent_export_usage_info = parent_export_usage_info.await?;
-
     let graph = graph.await?;
     let mut used_exports = FxHashMap::default();
 
@@ -83,13 +94,6 @@ pub async fn compute_export_usage_info_single(
             turbopack_core::module_graph::GraphTraversalAction::Continue
         })
         .context("failed to traverse module graph")?;
-
-    for (k, v) in &parent_export_usage_info.used_exports {
-        used_exports
-            .entry(*k)
-            .or_insert_with(Vec::new)
-            .extend(v.clone());
-    }
 
     Ok(ExportUsageInfo { used_exports }.cell())
 }
