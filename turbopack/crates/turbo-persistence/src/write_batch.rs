@@ -2,7 +2,7 @@ use std::{
     cell::UnsafeCell,
     fs::File,
     io::Write,
-    mem::{replace, swap, take},
+    mem::{replace, take},
     path::PathBuf,
     sync::atomic::{AtomicU32, Ordering},
 };
@@ -13,13 +13,13 @@ use lzzzz::lz4::{self, ACC_LEVEL_DEFAULT};
 use parking_lot::Mutex;
 use rayon::{
     iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator},
-    scope, Scope,
+    scope,
 };
 use smallvec::SmallVec;
 use thread_local::ThreadLocal;
 
 use crate::{
-    collector::{self, Collector},
+    collector::Collector,
     collector_entry::CollectorEntry,
     constants::{MAX_MEDIUM_VALUE_SIZE, THREAD_LOCAL_SIZE_SHIFT},
     key::StoreKey,
@@ -68,7 +68,7 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
             path,
             current_sequence_number: AtomicU32::new(current),
             thread_locals: ThreadLocal::new(),
-            collectors: [const { () }; FAMILIES].map(|_| Mutex::new(Collector::new())),
+            collectors: [(); FAMILIES].map(|_| Mutex::new(Collector::new())),
             new_sst_files: Mutex::new(Vec::new()),
             idle_collectors: Mutex::new(Vec::new()),
             idle_thread_local_collectors: Mutex::new(Vec::new()),
@@ -212,7 +212,7 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
 
         let collectors = replace(
             &mut self.collectors,
-            [const { () }; FAMILIES].map(|_| {
+            [(); FAMILIES].map(|_| {
                 Mutex::new(
                     self.idle_collectors
                         .lock()

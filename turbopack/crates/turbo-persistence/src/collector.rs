@@ -116,9 +116,4 @@ impl<K: StoreKey, const SIZE_SHIFT: usize> Collector<K, SIZE_SHIFT> {
         self.total_value_size = 0;
         self.entries.drain(..)
     }
-
-    /// Returns the number of entries in the collector.
-    pub fn len(&self) -> usize {
-        self.entries.len()
-    }
 }
