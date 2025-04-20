@@ -174,8 +174,6 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
         let mut new_blob_files = Vec::new();
         let shared_error = Mutex::new(Ok(()));
 
-        println!("finish write batch");
-
         // First, we flush all thread local collectors to the global collectors.
         scope(|scope| {
             let mut collectors = [const { Vec::new() }; FAMILIES];
@@ -205,8 +203,6 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
             }
         });
 
-        println!("flushed thread local collectors");
-
         // Now we reduce the global collectors in parallel
         let shared_new_sst_files = Mutex::new(&mut new_sst_files);
 
@@ -234,8 +230,6 @@ impl<K: StoreKey + Send + Sync, const FAMILIES: usize> WriteBatch<K, FAMILIES> {
                 }
                 anyhow::Ok(())
             })?;
-
-        println!("flushed collectors");
 
         shared_error.into_inner()?;
         let seq = self.current_sequence_number.load(Ordering::SeqCst);
