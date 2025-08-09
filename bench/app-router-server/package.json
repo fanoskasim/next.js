@@ -1,15 +1,21 @@
 {
-  "name": "bench-app-router-server",
-  "private": true,
-  "license": "MIT",
-  "dependencies": {
-    "webpack-bundle-analyzer": "^4.6.1",
-    "webpack-stats-plugin": "^1.1.0",
-    "next": "workspace:*",
-    "next-minimal-server": "workspace:*"
-  },
-  "scripts": {
-    "build-application": "next build",
-    "start": "next-minimal-server"
-  }
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
 }
